@@ -106,5 +106,5 @@ class Transformation:
 if __name__ == "__main__":
     pathname = './datasets/images/Apple/image_test.JPG'
 
-    transformation = Transformation(pathname, filter='mask', debug='print')
+    transformation = Transformation(pathname, filter='all', debug='print')
     transformation.transformations()
