@@ -3,6 +3,8 @@ import numpy as np
 import cv2
 import os
 import matplotlib.pyplot as plt
+import shutil
+from Distribution import count_jpg_files
 
 JPEG_SIGNATURE = b"\xFF\xD8"
 
@@ -169,6 +171,61 @@ def is_jpeg(file_path):
         header = f.read(2)
         return header == JPEG_SIGNATURE
 
+def augment_category(category, current_count, target_count):
+    category_prefix = category.split('_')[0]    
+    file_list = os.listdir(f"./datasets/images/{category_prefix}/{category}")
+    sorted_files = sorted(file_list, key=lambda x: int(x.split('(')[1].split(')')[0]))
+    
+    augmentation_functions = {
+        "Flip": flip,
+        "Rotate": rotation,
+        "Crop": crop,
+        "Distortion": distortion,
+        "Brightness": brightness,
+        "Saturation": saturation,
+    }
+
+    # number_iterations = target_count % current_count
+    path = f"./datasets/images/{category_prefix}/{category}"
+    for file in sorted_files:
+        if current_count == target_count:
+                return
+        for augmentation_type, func in augmentation_functions.items():
+            if current_count == target_count:
+                return
+            augmented_image = func(cv2.imread(f"{path}/{file}"))
+            filename = file.split(".JPG")[0]
+            plt.imsave(f"./datasets/augmented_directory/images/{category_prefix}/{category}/{filename}_{augmentation_type}.JPG", augmented_image)
+            current_count += 1
+
+
+
+
+def balance_dataset(dataset_path):
+    augmented_directory = "./datasets/augmented_directory"
+    if not os.path.exists(augmented_directory):
+        src = './datasets/'
+        dest = './datasets/augmented_directory'
+        destination = shutil.copytree(src, dest)  
+
+    category_counts = {}
+
+    for root, dirs, files in os.walk(dataset_path):
+        if len(dirs) == 0:
+            count_jpg_files(category_counts, root)
+    target_count = max(category_counts.values())
+    
+    for category, count in category_counts.items():
+        if count != target_count:
+            print(category, ":", count)
+            augment_category(category, count, target_count)
+            
+    
+    for root, dirs, files in os.walk("./datasets/augmented_directory/images/"):
+        if len(dirs) == 0:
+            count_jpg_files(category_counts, root)
+
+    print(category_counts)
 
 def main():
     try:
@@ -177,26 +234,29 @@ def main():
             sys.argv[1]
         ), "Argument is not a valid .jpg file"
         image_path = sys.argv[1]
+        
+        balance_dataset('./datasets/images/')
 
-        image = cv2.imread(image_path)
+        # image = cv2.imread(image_path)
 
-        augmented_images = {
-            "Flip": flip(image),
-            "Rotate": rotation(image),
-            "Crop": crop(image),
-            "Distortion": distortion(image),
-            "Brightness": brightness(image),
-            "Saturation": saturation(image),
-        }
+        # augmented_images = {
+        #     "Flip": flip(image),
+        #     "Rotate": rotation(image),
+        #     "Crop": crop(image),
+        #     "Distortion": distortion(image),
+        #     "Brightness": brightness(image),
+        #     "Saturation": saturation(image),
+        # }
 
-        # save
-        for key, value in augmented_images.items():
-            plt.imsave(image_path + f"_{key}.JPG", value)
+        # print(image_path)
+        # # save
+        # for key, value in augmented_images.items():
+        #     plt.imsave(image_path.split(".JPG")[0] + f"_{key}.JPG", value)
 
-        # display
-        updict = {"Original": image}
-        updict.update(augmented_images)
-        plot_data_augmentation(updict)
+        # # display
+        # updict = {"Original": image}
+        # updict.update(augmented_images)
+        # plot_data_augmentation(updict)
 
     except Exception as error:
         print(f"error: {error}")
