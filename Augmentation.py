@@ -44,7 +44,9 @@ def rotation(image):
     angle = np.random.randint(0, 360)
 
     rotation_matrix = cv2.getRotationMatrix2D(
-        (width // 2, height // 2), angle, 1)
+        (width // 2, height // 2),
+        angle,
+        1)
 
     rotated_image = cv2.warpAffine(
         image, rotation_matrix, (width, height), borderMode=cv2.BORDER_CONSTANT
@@ -65,8 +67,8 @@ def brightness(image):
     assert image is not None, "File could not be read"
 
     brightness_factor = np.random.uniform(1.5, 2.5)
-    brightened_image = np.clip(
-        image * brightness_factor, 0, 255).astype(np.uint8)
+    brightened_image = np.clip(image * brightness_factor,
+                               0, 255).astype(np.uint8)
 
     return brightened_image
 
@@ -104,8 +106,8 @@ def crop(image):
     start = np.random.randint(0, 100)
 
     cropped = image[start:height, start:width]
-    resized = cv2.resize(
-        cropped, (height, width), interpolation=cv2.INTER_AREA)
+    resized = cv2.resize(cropped,
+                         (height, width), interpolation=cv2.INTER_AREA)
 
     return resized
 
@@ -171,11 +173,21 @@ def is_jpeg(file_path):
         header = f.read(2)
         return header == JPEG_SIGNATURE
 
-def augment_category(category, current_count, target_count):
-    category_prefix = category.split('_')[0]    
+
+def augment_category(category: str, current_count: int, target_count: int):
+    """
+    Augments images in the specified category to match the target count.
+
+    Args:
+        category (str): category of images to augment
+        current_count (int): current count of images in the category.
+        target_count (int): target count of images to produce.
+    """
+    category_prefix = category.split("_")[0]
     file_list = os.listdir(f"./datasets/images/{category_prefix}/{category}")
-    sorted_files = sorted(file_list, key=lambda x: int(x.split('(')[1].split(')')[0]))
-    
+    sorted_files = sorted(file_list,
+                          key=lambda x: int(x.split("(")[1].split(")")[0]))
+
     augmentation_functions = {
         "Flip": flip,
         "Rotate": rotation,
@@ -185,41 +197,53 @@ def augment_category(category, current_count, target_count):
         "Saturation": saturation,
     }
 
-    path = f"./datasets/images/{category_prefix}/{category}"
+    source_path = f"./datasets/images/{category_prefix}/{category}"
+    destination_path = "./datasets/augmented_directory/images"
+
     for file in sorted_files:
         if current_count == target_count:
-                return
-        for augmentation_type, func in augmentation_functions.items():
+            return
+        filename = file.split(".JPG")[0]
+        image = cv2.imread(f"{source_path}/{file}")
+        for augmentation_type, function in augmentation_functions.items():
             if current_count == target_count:
                 return
-            augmented_image = func(cv2.imread(f"{path}/{file}"))
-            filename = file.split(".JPG")[0]
-            plt.imsave(f"./datasets/augmented_directory/images/{category_prefix}/{category}/{filename}_{augmentation_type}.JPG", augmented_image)
+            augmented_image = function(image)
+            plt.imsave(
+                f"{destination_path}/{category_prefix}/{category}/{filename}_{augmentation_type}.JPG",
+                augmented_image,
+            )
             current_count += 1
 
 
-
-
 def balance_dataset(dataset_path):
+    """
+    Balances the dataset by augmenting images in each category
+    to match the count of the category with the most images.
+    A new augmented_directory is created to store balanced dataset
+
+    Args:
+        dataset_path (str): path to the dataset to augment
+    """
     augmented_directory = "./datasets/augmented_directory"
     if not os.path.exists(augmented_directory):
-        src = './datasets/'
-        dest = './datasets/augmented_directory'
-        destination = shutil.copytree(src, dest)  
+        src = "./datasets/"
+        dest = "./datasets/augmented_directory"
+        shutil.copytree(src, dest)
+        print(f'Copied {src} to {dest}')
 
     category_counts = {}
 
     for root, dirs, files in os.walk(dataset_path):
         if len(dirs) == 0:
             count_jpg_files(category_counts, root)
-    
+
     target_count = max(category_counts.values())
-    
+
     for category, count in category_counts.items():
         if count != target_count:
             augment_category(category, count, target_count)
-    
-    print(category_counts)
+
 
 def main():
     try:
@@ -228,27 +252,27 @@ def main():
             sys.argv[1]
         ), "Argument is not a valid .jpg file"
         image_path = sys.argv[1]
-        
-        image = cv2.imread(image_path)
 
-        augmented_images = {
-            "Flip": flip(image),
-            "Rotate": rotation(image),
-            "Crop": crop(image),
-            "Distortion": distortion(image),
-            "Brightness": brightness(image),
-            "Saturation": saturation(image),
-        }
+        balance_dataset("./datasets/images")
+        # image = cv2.imread(image_path)
 
-        print(image_path)
-        # save
-        for key, value in augmented_images.items():
-            plt.imsave(image_path.split(".JPG")[0] + f"_{key}.JPG", value)
+        # augmented_images = {
+        #     "Flip": flip(image),
+        #     "Rotate": rotation(image),
+        #     "Crop": crop(image),
+        #     "Distortion": distortion(image),
+        #     "Brightness": brightness(image),
+        #     "Saturation": saturation(image),
+        # }
 
-        # display
-        updict = {"Original": image}
-        updict.update(augmented_images)
-        plot_data_augmentation(updict)
+        # # save
+        # for key, value in augmented_images.items():
+        #     plt.imsave(image_path.split(".JPG")[0] + f"_{key}.JPG", value)
+
+        # # display
+        # updict = {"Original": image}
+        # updict.update(augmented_images)
+        # plot_data_augmentation(updict)
 
     except Exception as error:
         print(f"error: {error}")
