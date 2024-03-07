@@ -157,7 +157,8 @@ class Transformation:
         roi_image[kept_mask != 0] = (0, 255, 0)
         self.roi_border(roi_image, 5)
 
-        pcv.print_image(roi_image, 'roi_objects.png')
+        if self.filter in ('all', 'roi_objects') and self.debug in ('plot', 'print'):
+            pcv.print_image(roi_image, 'roi_objects.png')
 
         pcv.params.debug = None
 
@@ -168,6 +169,16 @@ class Transformation:
             pcv.params.debug = self.debug
 
         shape_image = pcv.analyze.size(img=self.image, labeled_mask=self._plant_mask, n_labels=1)
+
+        pcv.params.debug = None
+
+        return None
+
+    def pseudolandmarks(self):
+        if self.filter in ('all', 'pseudolandmarks') and self.debug in ('plot', 'print'):
+            pcv.params.debug = self.debug
+
+        pcv.homology.x_axis_pseudolandmarks(img=self.image, mask=self._plant_mask)
 
         pcv.params.debug = None
 
@@ -186,8 +197,10 @@ class Transformation:
 
         self.analyze_object()
 
+        self.pseudolandmarks()
+
 if __name__ == "__main__":
     pathname = './datasets/images/Apple/image_test.JPG'
 
-    transformation = Transformation(pathname, filter='analyze_object', debug='print')
+    transformation = Transformation(pathname, filter='pseudolandmarks', debug='print')
     transformation.transformations()
