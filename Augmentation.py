@@ -185,7 +185,6 @@ def augment_category(category, current_count, target_count):
         "Saturation": saturation,
     }
 
-    # number_iterations = target_count % current_count
     path = f"./datasets/images/{category_prefix}/{category}"
     for file in sorted_files:
         if current_count == target_count:
@@ -213,18 +212,13 @@ def balance_dataset(dataset_path):
     for root, dirs, files in os.walk(dataset_path):
         if len(dirs) == 0:
             count_jpg_files(category_counts, root)
+    
     target_count = max(category_counts.values())
     
     for category, count in category_counts.items():
         if count != target_count:
-            print(category, ":", count)
             augment_category(category, count, target_count)
-            
     
-    for root, dirs, files in os.walk("./datasets/augmented_directory/images/"):
-        if len(dirs) == 0:
-            count_jpg_files(category_counts, root)
-
     print(category_counts)
 
 def main():
@@ -235,28 +229,26 @@ def main():
         ), "Argument is not a valid .jpg file"
         image_path = sys.argv[1]
         
-        balance_dataset('./datasets/images/')
+        image = cv2.imread(image_path)
 
-        # image = cv2.imread(image_path)
+        augmented_images = {
+            "Flip": flip(image),
+            "Rotate": rotation(image),
+            "Crop": crop(image),
+            "Distortion": distortion(image),
+            "Brightness": brightness(image),
+            "Saturation": saturation(image),
+        }
 
-        # augmented_images = {
-        #     "Flip": flip(image),
-        #     "Rotate": rotation(image),
-        #     "Crop": crop(image),
-        #     "Distortion": distortion(image),
-        #     "Brightness": brightness(image),
-        #     "Saturation": saturation(image),
-        # }
+        print(image_path)
+        # save
+        for key, value in augmented_images.items():
+            plt.imsave(image_path.split(".JPG")[0] + f"_{key}.JPG", value)
 
-        # print(image_path)
-        # # save
-        # for key, value in augmented_images.items():
-        #     plt.imsave(image_path.split(".JPG")[0] + f"_{key}.JPG", value)
-
-        # # display
-        # updict = {"Original": image}
-        # updict.update(augmented_images)
-        # plot_data_augmentation(updict)
+        # display
+        updict = {"Original": image}
+        updict.update(augmented_images)
+        plot_data_augmentation(updict)
 
     except Exception as error:
         print(f"error: {error}")
