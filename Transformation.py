@@ -4,8 +4,8 @@ from plantcv import plantcv as pcv
 class Transformation:
     def __init__(self, pathname: str, filter: str, debug: str) -> None:
         # Reading image
-        self.image, self.path, self.filename = pcv.readimage(self.pathname)
         self.pathname = pathname
+        self.image, self.path, self.filename = pcv.readimage(self.pathname)
 
         # Debug
         self.debug = debug
@@ -163,6 +163,16 @@ class Transformation:
 
         return None
 
+    def analyze_object(self):
+        if self.filter in ('all', 'analyze_object') and self.debug in ('plot', 'print'):
+            pcv.params.debug = self.debug
+
+        shape_image = pcv.analyze.size(img=self.image, labeled_mask=self._plant_mask, n_labels=1)
+
+        pcv.params.debug = None
+
+        return None
+
     def transformations(self):
         self.original()
         self.gaussian_blur()
@@ -174,8 +184,10 @@ class Transformation:
 
         self.roi_objects()
 
+        self.analyze_object()
+
 if __name__ == "__main__":
     pathname = './datasets/images/Apple/image_test.JPG'
 
-    transformation = Transformation(pathname, filter='roi_objects', debug='print')
+    transformation = Transformation(pathname, filter='analyze_object', debug='print')
     transformation.transformations()
