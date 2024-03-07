@@ -145,9 +145,6 @@ class Transformation:
             h=self.image.shape[1],
         )
 
-        if self.filter in ('all', 'roi_objects') and self.debug in ('plot', 'print'):
-            pcv.params.debug = self.debug
-
         kept_mask = pcv.roi.filter(
             mask=self._plant_mask,
             roi=roi,
@@ -200,22 +197,73 @@ def main():
     )
 
     parser.add_argument(
-        dest='path',
+        'path',
+        nargs='?',
         type=str,
-        help='Path of an image.'
+        help="Path of image to transform."
     )
 
     parser.add_argument(
-        dest='-dst',
+        '-src',
         type=str,
-        help='Destination of the transformed image.',
-        default=None
+        nargs=1,
+        default=None,
+        help="Transform all images in a folder."
     )
 
+    parser.add_argument(
+        '-dst',
+        type=str,
+        nargs=1,
+        default=None,
+        help="Destination of the transformed images."
+    )
+
+    # Original
+    parser.add_argument(
+        '-original',
+        help="Get original picture",
+        action="store_true"
+    )
+
+    # Gaussian blur
+    parser.add_argument(
+        '-gaussian_blur',
+        help="Get gaussian blur verion of picture",
+        action="store_true"
+    )
+
+    # Mask
+    parser.add_argument(
+        '-mask',
+        help="Get mask of picture",
+        action="store_true"
+    )
+
+    # Roi objects
+    parser.add_argument(
+        '-roi_objects',
+        help="Get roi objects of picture",
+        action="store_true"
+    )
+
+    # Analyze objects
+    parser.add_argument(
+        '-analyze_objects',
+        help="Analyze objects of picture",
+        action="store_true"
+    )
+
+    # Pseudolandmarks
+    parser.add_argument(
+        '-pseudolandmarks',
+        help="Get pseudolandmarks of picture",
+        action="store_true"
+    )
+
+    args = parser.parse_args()
+
+    print(args)
+
 if __name__ == "__main__":
-    # pathname = './datasets/images/Apple/image_test.JPG'
-
-    # transformation = Transformation(pathname, filter='pseudolandmarks', debug='print')
-    # transformation.transformations()
-
     main()
