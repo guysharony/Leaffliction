@@ -1,3 +1,4 @@
+import argparse
 from plantcv import plantcv as pcv
 
 
@@ -162,8 +163,6 @@ class Transformation:
 
         pcv.params.debug = None
 
-        return None
-
     def analyze_object(self):
         if self.filter in ('all', 'analyze_object') and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
@@ -172,8 +171,6 @@ class Transformation:
 
         pcv.params.debug = None
 
-        return None
-
     def pseudolandmarks(self):
         if self.filter in ('all', 'pseudolandmarks') and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
@@ -181,8 +178,6 @@ class Transformation:
         pcv.homology.x_axis_pseudolandmarks(img=self.image, mask=self._plant_mask)
 
         pcv.params.debug = None
-
-        return None
 
     def transformations(self):
         self.original()
@@ -199,8 +194,28 @@ class Transformation:
 
         self.pseudolandmarks()
 
-if __name__ == "__main__":
-    pathname = './datasets/images/Apple/image_test.JPG'
+def main():
+    parser = argparse.ArgumentParser(
+        description="""This is an image transformation program."""
+    )
 
-    transformation = Transformation(pathname, filter='pseudolandmarks', debug='print')
-    transformation.transformations()
+    parser.add_argument(
+        dest='path',
+        type=str,
+        help='Path of an image.'
+    )
+
+    parser.add_argument(
+        dest='-dst',
+        type=str,
+        help='Destination of the transformed image.',
+        default=None
+    )
+
+if __name__ == "__main__":
+    # pathname = './datasets/images/Apple/image_test.JPG'
+
+    # transformation = Transformation(pathname, filter='pseudolandmarks', debug='print')
+    # transformation.transformations()
+
+    main()
