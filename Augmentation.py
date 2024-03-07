@@ -253,26 +253,25 @@ def main():
         ), "Argument is not a valid .jpg file"
         image_path = sys.argv[1]
 
-        balance_dataset("./datasets/images")
-        # image = cv2.imread(image_path)
+        image = cv2.imread(image_path)
 
-        # augmented_images = {
-        #     "Flip": flip(image),
-        #     "Rotate": rotation(image),
-        #     "Crop": crop(image),
-        #     "Distortion": distortion(image),
-        #     "Brightness": brightness(image),
-        #     "Saturation": saturation(image),
-        # }
+        augmented_images = {
+            "Flip": flip(image),
+            "Rotate": rotation(image),
+            "Crop": crop(image),
+            "Distortion": distortion(image),
+            "Brightness": brightness(image),
+            "Saturation": saturation(image),
+        }
 
-        # # save
-        # for key, value in augmented_images.items():
-        #     plt.imsave(image_path.split(".JPG")[0] + f"_{key}.JPG", value)
+        # save
+        for key, value in augmented_images.items():
+            plt.imsave(image_path.split(".JPG")[0] + f"_{key}.JPG", value)
 
-        # # display
-        # updict = {"Original": image}
-        # updict.update(augmented_images)
-        # plot_data_augmentation(updict)
+        # display
+        updict = {"Original": image}
+        updict.update(augmented_images)
+        plot_data_augmentation(updict)
 
     except Exception as error:
         print(f"error: {error}")
