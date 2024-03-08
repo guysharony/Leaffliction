@@ -6,14 +6,15 @@ from plantcv import plantcv as pcv
 
 
 class Transformation:
-    def __init__(self, pathname: str, filter: str, debug: str) -> None:
+    def __init__(self, source: str, transformation: str) -> None:
         # Reading image
-        self.pathname = pathname
-        self.image, self.path, self.filename = pcv.readimage(self.pathname)
+        self.source = source
+        self.destination = None
+        self.image, self.path, self.filename = pcv.readimage(self.source)
 
         # Debug
-        self.debug = debug
-        self.filter = filter
+        self.debug = 'plot'
+        self.transformation = transformation
 
     def _grayscale_hsv(self, channel: str, threshold: int, object_type: str = 'light'):
         # Converting RGB image to HSV grayscale by extracting the saturation channel.
@@ -35,18 +36,23 @@ class Transformation:
         s_binary = pcv.threshold.binary(gray_img=b_channel, threshold=threshold, object_type=object_type)
         return s_binary
 
+    def set_destination(self, destination):
+        self.debug = 'print'
+        self.outdir = f'./{destination}'
+        pcv.params.debug_outdir = f'./{destination}'
+
     def original(self):
-        if self.filter in ('all', 'original') and self.debug in ('plot', 'print'):
+        if self.transformation in ('all', 'original') and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
 
-        self.image, self.path, self.filename = pcv.readimage(self.pathname)
+        self.image, self.path, self.filename = pcv.readimage(self.source)
         pcv.params.debug = None
         return self.image
 
     def gaussian_blur(self):
         s_gray = self._grayscale_hsv(channel='s', threshold=58)
 
-        if self.filter in ('all', 'gaussian_blur') and self.debug in ('plot', 'print'):
+        if self.transformation in ('all', 'gaussian_blur') and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
 
         g_blur = pcv.gaussian_blur(s_gray, ksize=(5, 5))
@@ -58,7 +64,7 @@ class Transformation:
     def median_blur(self):
         s_gray = self._grayscale_hsv(channel='s', threshold=58)
 
-        if self.filter in ('median_blur') and self.debug in ('plot', 'print'):
+        if self.transformation in ('median_blur') and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
 
         m_blur = pcv.median_blur(s_gray, ksize=(5, 5))
@@ -96,7 +102,7 @@ class Transformation:
         return plant_mask
 
     def mask(self):
-        if self.filter in ('all', 'mask') and self.debug in ('plot', 'print'):
+        if self.transformation in ('all', 'mask') and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
 
         # Apply mask (for VIS images, mask_color=white)
@@ -158,13 +164,13 @@ class Transformation:
         roi_image[kept_mask != 0] = (0, 255, 0)
         self.roi_border(roi_image, 5)
 
-        if self.filter in ('all', 'roi_objects') and self.debug in ('plot', 'print'):
+        if self.transformation in ('all', 'roi_objects') and self.debug in ('plot', 'print'):
             pcv.print_image(roi_image, 'roi_objects.png')
 
         pcv.params.debug = None
 
     def analyze_object(self):
-        if self.filter in ('all', 'analyze_object') and self.debug in ('plot', 'print'):
+        if self.transformation in ('all', 'analyze_object') and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
 
         shape_image = pcv.analyze.size(img=self.image, labeled_mask=self._plant_mask, n_labels=1)
@@ -172,7 +178,7 @@ class Transformation:
         pcv.params.debug = None
 
     def pseudolandmarks(self):
-        if self.filter in ('all', 'pseudolandmarks') and self.debug in ('plot', 'print'):
+        if self.transformation in ('all', 'pseudolandmarks') and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
 
         pcv.homology.x_axis_pseudolandmarks(img=self.image, mask=self._plant_mask)
@@ -247,16 +253,34 @@ def parser():
 def main():
     path, src, dst, transformations = parser()
 
+    print(transformations)
+    exit(1)
+
     if dst:
         if not os.path.exists(dst[0]):
             os.makedirs(f'./{dst[0]}')
 
-        destination_path = dst[0] if dst[0][-1] == '/' else f'{dst[0]}/'
+        destination_directory = f'{dst[0]}' if dst[0][-1] == '/' else f'{dst[0]}/'
 
-    if src:
+    if src and destination_directory:
         if not os.path.exists(src[0]) or not os.path.isdir(src[0]):
             raise ValueError("[-src] Folder doesn't exist.")
 
+        for file in os.listdir(src[0]):
+            if os.path.isdir(file):
+                raise ValueError("[-src] Folder must contain only images to transforme.")
+
+        for file in os.listdir(src[0]):
+            image_directory = f"{str(file).split('/')[-1]}/"
+            destination_subdirectory = destination_directory + image_directory
+
+            if not os.path.exists(destination_subdirectory):
+                os.makedirs(destination_subdirectory)
+
+            transforme = Transformation(
+                source=file,
+                transformation=transformations
+            )
 
 if __name__ == "__main__":
     main()
