@@ -243,34 +243,35 @@ def parser():
         args.pseudolandmarks
     ])
 
+    transformation_options = transformations[options] if options.any() else transformations
+    if len(transformation_options) > 1:
+        raise ValueError("[transformation] Only 1 transformation can be specified.")
+
     return (
         args.path,
-        args.src,
-        args.dst,
-        transformations[options] if options.any() else transformations
+        args.src[0] if args.src else None,
+        args.dst[0] if args.dst else None,
+        transformation_options[0] if len(transformation_options) == 1 else 'all'
     )
 
 def main():
-    path, src, dst, transformations = parser()
-
-    print(transformations)
-    exit(1)
+    path, src, dst, transformation = parser()
 
     if dst:
-        if not os.path.exists(dst[0]):
-            os.makedirs(f'./{dst[0]}')
+        if not os.path.exists(dst):
+            os.makedirs(f'./{dst}')
 
-        destination_directory = f'{dst[0]}' if dst[0][-1] == '/' else f'{dst[0]}/'
+        destination_directory = f'{dst}' if dst[-1] == '/' else f'{dst}/'
 
     if src and destination_directory:
-        if not os.path.exists(src[0]) or not os.path.isdir(src[0]):
+        if not os.path.exists(src) or not os.path.isdir(src):
             raise ValueError("[-src] Folder doesn't exist.")
 
-        for file in os.listdir(src[0]):
+        for file in os.listdir(src):
             if os.path.isdir(file):
                 raise ValueError("[-src] Folder must contain only images to transforme.")
 
-        for file in os.listdir(src[0]):
+        for file in os.listdir(src):
             image_directory = f"{str(file).split('/')[-1]}/"
             destination_subdirectory = destination_directory + image_directory
 
@@ -279,8 +280,20 @@ def main():
 
             transforme = Transformation(
                 source=file,
-                transformation=transformations
+                transformation=transformation
             )
+            transforme.set_destination(destination_subdirectory)
+            transforme.transformations()
+    else:
+        if not os.path.exists(path) or not os.path.isfile(path):
+            raise ValueError("[-src] File doesn't exist.")
+
+        transforme = Transformation(
+            source=path,
+            transformation=transformation
+        )
+        transforme.set_destination(dst)
+        transforme.transformations()
 
 if __name__ == "__main__":
     main()
