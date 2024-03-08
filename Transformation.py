@@ -11,6 +11,7 @@ class Transformation:
         self.source = source
         self.destination = None
         self.image, self.path, self.filename = pcv.readimage(self.source)
+        self.image_name = os.path.splitext(self.filename)[0]
 
         # Debug
         self.debug = 'plot'
@@ -37,26 +38,42 @@ class Transformation:
         return s_binary
 
     def set_destination(self, destination):
+        if destination is None:
+            return
+
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+
         self.debug = 'print'
         self.outdir = f'./{destination}'
         pcv.params.debug_outdir = f'./{destination}'
 
+    def plot_image(self, image, transformation):
+        if self.transformation not in ('all', transformation):
+            return
+
+        if self.debug == 'print':
+            pcv.print_image(
+                image,
+                os.path.join(
+                    self.outdir,
+                    f'{self.image_name}_{transformation}.jpg'
+                )
+            )
+        else:
+            pcv.plot_image(
+                image
+            )
+
     def original(self):
-        if self.transformation in ('all', 'original') and self.debug in ('plot', 'print'):
-            pcv.params.debug = self.debug
-
         self.image, self.path, self.filename = pcv.readimage(self.source)
-        pcv.params.debug = None
-        return self.image
+        self.plot_image(self.image, 'original')
 
-    def gaussian_blur(self):
+    def blur(self):
         s_gray = self._grayscale_hsv(channel='s', threshold=58)
 
-        if self.transformation in ('all', 'gaussian_blur') and self.debug in ('plot', 'print'):
-            pcv.params.debug = self.debug
-
         g_blur = pcv.gaussian_blur(s_gray, ksize=(5, 5))
-        pcv.params.debug = None
+        self.plot_image(g_blur, 'blur')
 
         self._g_blur = g_blur
         return g_blur
@@ -64,14 +81,8 @@ class Transformation:
     def median_blur(self):
         s_gray = self._grayscale_hsv(channel='s', threshold=58)
 
-        if self.transformation in ('median_blur') and self.debug in ('plot', 'print'):
-            pcv.params.debug = self.debug
-
-        m_blur = pcv.median_blur(s_gray, ksize=(5, 5))
-        pcv.params.debug = None
-
-        self._m_blur = m_blur
-        return m_blur
+        self._m_blur = pcv.median_blur(s_gray, ksize=(5, 5))
+        return self._m_blur
 
     def background_mask(self):
         b_gray = self._grayscale_lab(channel='b', threshold=160)
@@ -102,19 +113,14 @@ class Transformation:
         return plant_mask
 
     def mask(self):
-        if self.transformation in ('all', 'mask') and self.debug in ('plot', 'print'):
-            pcv.params.debug = self.debug
-
         # Apply mask (for VIS images, mask_color=white)
         masked = pcv.apply_mask(self._background_mask, self._plant_mask, mask_color='white')
-        pcv.params.debug = None
+        self.plot_image(masked, 'mask')
 
         self._mask = masked
         return masked
 
     def roi_border(self, image, border_width: int):
-        # HAS TO BE IMPROVED
-
         image_width = image.shape[0]
         image_height = image.shape[1]
 
@@ -142,10 +148,7 @@ class Transformation:
 
         return image
 
-
-    def roi_objects(self):
-        # HAS TO BE IMPROVED
-
+    def roi(self):
         roi = pcv.roi.rectangle(
             img=self._plant_mask,
             x=0,
@@ -164,39 +167,39 @@ class Transformation:
         roi_image[kept_mask != 0] = (0, 255, 0)
         self.roi_border(roi_image, 5)
 
-        if self.transformation in ('all', 'roi_objects') and self.debug in ('plot', 'print'):
-            pcv.print_image(roi_image, 'roi_objects.png')
+        self.plot_image(roi_image, 'roi')
 
-        pcv.params.debug = None
-
-    def analyze_object(self):
-        if self.transformation in ('all', 'analyze_object') and self.debug in ('plot', 'print'):
-            pcv.params.debug = self.debug
-
-        shape_image = pcv.analyze.size(img=self.image, labeled_mask=self._plant_mask, n_labels=1)
-
-        pcv.params.debug = None
+    def analyze(self):
+        analyze = pcv.analyze.size(img=self.image, labeled_mask=self._plant_mask, n_labels=1)
+        self.plot_image(analyze, 'analyze')
 
     def pseudolandmarks(self):
         if self.transformation in ('all', 'pseudolandmarks') and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
 
+        output_image = os.path.join(
+            pcv.params.debug_outdir,
+            (str(pcv.params.device) + '_x_axis_pseudolandmarks.png')
+        )
         pcv.homology.x_axis_pseudolandmarks(img=self.image, mask=self._plant_mask)
 
+        image, _, _ = pcv.readimage(output_image)
+        self.plot_image(image, 'pseudolandmarks')
+        os.remove(output_image)
         pcv.params.debug = None
 
     def transformations(self):
         self.original()
-        self.gaussian_blur()
+        self.blur()
 
         self.median_blur()
         self.background_mask()
         self.plant_mask()
         self.mask()
 
-        self.roi_objects()
+        self.roi()
 
-        self.analyze_object()
+        self.analyze()
 
         self.pseudolandmarks()
 
@@ -243,7 +246,7 @@ def parser():
         args.pseudolandmarks
     ])
 
-    transformation_options = transformations[options] if options.any() else transformations
+    transformation_options = transformations[options]
     if len(transformation_options) > 1:
         raise ValueError("[transformation] Only 1 transformation can be specified.")
 
@@ -258,10 +261,6 @@ def main():
     try:
         path, src, dst, transformation = parser()
 
-        if dst:
-            if not os.path.exists(dst):
-                os.makedirs(f'./{dst}')
-
         if src and dst:
             if not os.path.exists(src) or not os.path.isdir(src):
                 raise ValueError("[-src] Folder doesn't exist.")
@@ -271,17 +270,11 @@ def main():
                     raise ValueError("[-src] Folder must contain only images to transforme.")
 
             for file in os.listdir(src):
-                image_directory = f"{str(file).split('/')[-1]}/"
-                destination_subdirectory = os.path.join(dst, image_directory)
-
-                if not os.path.exists(destination_subdirectory):
-                    os.makedirs(destination_subdirectory)
-
                 transforme = Transformation(
                     source=os.path.join(src, file),
                     transformation=transformation
                 )
-                transforme.set_destination(destination_subdirectory)
+                transforme.set_destination(os.path.join(dst))
                 transforme.transformations()
         else:
             if not os.path.exists(path) or not os.path.isfile(path):
