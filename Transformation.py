@@ -61,6 +61,7 @@ class Transformation:
                 )
             )
         else:
+            print(image)
             pcv.plot_image(
                 image
             )
@@ -169,6 +170,8 @@ class Transformation:
 
         self.plot_image(roi_image, 'roi')
 
+        self._kept_mask = kept_mask
+
     def analyze(self):
         analyze = pcv.analyze.size(img=self.image, labeled_mask=self._plant_mask, n_labels=1)
         self.plot_image(analyze, 'analyze')
@@ -183,10 +186,23 @@ class Transformation:
         )
         pcv.homology.x_axis_pseudolandmarks(img=self.image, mask=self._plant_mask)
 
-        image, _, _ = pcv.readimage(output_image)
-        self.plot_image(image, 'pseudolandmarks')
-        os.remove(output_image)
+        if self.debug in ('print'):
+            image, _, _ = pcv.readimage(output_image)
+            self.plot_image(image, 'pseudolandmarks')
+            os.remove(output_image)
+
         pcv.params.debug = None
+
+    def colors(self):
+        # To finish
+
+        mask, _ = pcv.create_labels(mask=self._kept_mask)
+        color_histogram = pcv.analyze.color(
+            rgb_img=self.image,
+            colorspaces='rgb',
+            labeled_mask=mask,
+            label="default"
+        )
 
     def transformations(self):
         self.original()
@@ -202,6 +218,8 @@ class Transformation:
         self.analyze()
 
         self.pseudolandmarks()
+
+        self.colors()
 
 def parser():
     parser = argparse.ArgumentParser(
@@ -219,6 +237,7 @@ def parser():
     parser.add_argument('-roi', help="Get roi objects of picture", action="store_true")
     parser.add_argument('-analyze', help="Analyze objects of picture", action="store_true")
     parser.add_argument('-pseudolandmarks', help="Get pseudolandmarks of picture", action="store_true")
+    parser.add_argument('-colors', help="Get color repartition of picture", action="store_true")
 
     # Parser
     args = parser.parse_args(sys.argv[1::])
@@ -234,7 +253,8 @@ def parser():
         'mask',
         'roi',
         'analyze',
-        'pseudolandmarks'
+        'pseudolandmarks',
+        'colors'
     ])
 
     options = np.array([
@@ -243,7 +263,8 @@ def parser():
         args.mask,
         args.roi,
         args.analyze,
-        args.pseudolandmarks
+        args.pseudolandmarks,
+        args.colors
     ])
 
     transformation_options = transformations[options]
@@ -258,36 +279,36 @@ def parser():
     )
 
 def main():
-    try:
-        path, src, dst, transformation = parser()
+    # try:
+    path, src, dst, transformation = parser()
 
-        if src and dst:
-            if not os.path.exists(src) or not os.path.isdir(src):
-                raise ValueError("[-src] Folder doesn't exist.")
+    if src and dst:
+        if not os.path.exists(src) or not os.path.isdir(src):
+            raise ValueError("[-src] Folder doesn't exist.")
 
-            for file in os.listdir(src):
-                if os.path.isdir(os.path.join(src, file)):
-                    raise ValueError("[-src] Folder must contain only images to transforme.")
+        for file in os.listdir(src):
+            if os.path.isdir(os.path.join(src, file)):
+                raise ValueError("[-src] Folder must contain only images to transforme.")
 
-            for file in os.listdir(src):
-                transforme = Transformation(
-                    source=os.path.join(src, file),
-                    transformation=transformation
-                )
-                transforme.set_destination(os.path.join(dst))
-                transforme.transformations()
-        else:
-            if not os.path.exists(path) or not os.path.isfile(path):
-                raise ValueError("[-src] File doesn't exist.")
-
+        for file in os.listdir(src):
             transforme = Transformation(
-                source=path,
+                source=os.path.join(src, file),
                 transformation=transformation
             )
-            transforme.set_destination(dst)
+            transforme.set_destination(os.path.join(dst))
             transforme.transformations()
-    except Exception as error:
-        print(f'Error: {error}')
+    else:
+        if not os.path.exists(path) or not os.path.isfile(path):
+            raise ValueError("[-src] File doesn't exist.")
+
+        transforme = Transformation(
+            source=path,
+            transformation=transformation
+        )
+        transforme.set_destination(dst)
+        transforme.transformations()
+    # except Exception as error:
+    #    print(f'Error: {error}')
 
 if __name__ == "__main__":
     main()
