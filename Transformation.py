@@ -1,4 +1,7 @@
+import os
+import sys
 import argparse
+import numpy as np
 from plantcv import plantcv as pcv
 
 
@@ -191,79 +194,69 @@ class Transformation:
 
         self.pseudolandmarks()
 
-def main():
+def parser():
     parser = argparse.ArgumentParser(
         description="""This is an image transformation program."""
     )
 
-    parser.add_argument(
-        'path',
-        nargs='?',
-        type=str,
-        help="Path of image to transform."
+    parser.add_argument('path', nargs='?', type=str, help="Path of image to transform.")
+    parser.add_argument('-src', type=str, nargs=1, default=None, help="Transform all images in a folder.")
+    parser.add_argument('-dst', type=str, nargs=1, default=None, help="Destination of the transformed images.")
+
+    # Transformations
+    parser.add_argument('-original', help="Get original picture", action="store_true")
+    parser.add_argument('-blur', help="Get gaussian blur verion of picture", action="store_true")
+    parser.add_argument('-mask', help="Get mask of picture", action="store_true")
+    parser.add_argument('-roi', help="Get roi objects of picture", action="store_true")
+    parser.add_argument('-analyze', help="Analyze objects of picture", action="store_true")
+    parser.add_argument('-pseudolandmarks', help="Get pseudolandmarks of picture", action="store_true")
+
+    # Parser
+    args = parser.parse_args(sys.argv[1::])
+
+    if args.src and not args.dst:
+        raise ValueError("[-dst] Destination folder not specified.")
+    elif args.src and args.path:
+        raise ValueError("[-src, -path] Source and path cannot be specified at the same time.")
+
+    transformations = np.array([
+        'original',
+        'blur',
+        'mask',
+        'roi',
+        'analyze',
+        'pseudolandmarks'
+    ])
+
+    options = np.array([
+        args.original,
+        args.blur,
+        args.mask,
+        args.roi,
+        args.analyze,
+        args.pseudolandmarks
+    ])
+
+    return (
+        args.path,
+        args.src,
+        args.dst,
+        transformations[options] if options.any() else transformations
     )
 
-    parser.add_argument(
-        '-src',
-        type=str,
-        nargs=1,
-        default=None,
-        help="Transform all images in a folder."
-    )
+def main():
+    path, src, dst, transformations = parser()
 
-    parser.add_argument(
-        '-dst',
-        type=str,
-        nargs=1,
-        default=None,
-        help="Destination of the transformed images."
-    )
+    if dst:
+        if not os.path.exists(dst[0]):
+            os.makedirs(f'./{dst[0]}')
 
-    # Original
-    parser.add_argument(
-        '-original',
-        help="Get original picture",
-        action="store_true"
-    )
+        destination_path = dst[0] if dst[0][-1] == '/' else f'{dst[0]}/'
 
-    # Gaussian blur
-    parser.add_argument(
-        '-gaussian_blur',
-        help="Get gaussian blur verion of picture",
-        action="store_true"
-    )
+    if src:
+        if not os.path.exists(src[0]) or not os.path.isdir(src[0]):
+            raise ValueError("[-src] Folder doesn't exist.")
 
-    # Mask
-    parser.add_argument(
-        '-mask',
-        help="Get mask of picture",
-        action="store_true"
-    )
-
-    # Roi objects
-    parser.add_argument(
-        '-roi_objects',
-        help="Get roi objects of picture",
-        action="store_true"
-    )
-
-    # Analyze objects
-    parser.add_argument(
-        '-analyze_objects',
-        help="Analyze objects of picture",
-        action="store_true"
-    )
-
-    # Pseudolandmarks
-    parser.add_argument(
-        '-pseudolandmarks',
-        help="Get pseudolandmarks of picture",
-        action="store_true"
-    )
-
-    args = parser.parse_args()
-
-    print(args)
 
 if __name__ == "__main__":
     main()
