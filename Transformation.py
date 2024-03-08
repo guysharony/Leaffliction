@@ -255,45 +255,46 @@ def parser():
     )
 
 def main():
-    path, src, dst, transformation = parser()
+    try:
+        path, src, dst, transformation = parser()
 
-    if dst:
-        if not os.path.exists(dst):
-            os.makedirs(f'./{dst}')
+        if dst:
+            if not os.path.exists(dst):
+                os.makedirs(f'./{dst}')
 
-        destination_directory = f'{dst}' if dst[-1] == '/' else f'{dst}/'
+        if src and dst:
+            if not os.path.exists(src) or not os.path.isdir(src):
+                raise ValueError("[-src] Folder doesn't exist.")
 
-    if src and destination_directory:
-        if not os.path.exists(src) or not os.path.isdir(src):
-            raise ValueError("[-src] Folder doesn't exist.")
+            for file in os.listdir(src):
+                if os.path.isdir(os.path.join(src, file)):
+                    raise ValueError("[-src] Folder must contain only images to transforme.")
 
-        for file in os.listdir(src):
-            if os.path.isdir(file):
-                raise ValueError("[-src] Folder must contain only images to transforme.")
+            for file in os.listdir(src):
+                image_directory = f"{str(file).split('/')[-1]}/"
+                destination_subdirectory = os.path.join(dst, image_directory)
 
-        for file in os.listdir(src):
-            image_directory = f"{str(file).split('/')[-1]}/"
-            destination_subdirectory = destination_directory + image_directory
+                if not os.path.exists(destination_subdirectory):
+                    os.makedirs(destination_subdirectory)
 
-            if not os.path.exists(destination_subdirectory):
-                os.makedirs(destination_subdirectory)
+                transforme = Transformation(
+                    source=os.path.join(src, file),
+                    transformation=transformation
+                )
+                transforme.set_destination(destination_subdirectory)
+                transforme.transformations()
+        else:
+            if not os.path.exists(path) or not os.path.isfile(path):
+                raise ValueError("[-src] File doesn't exist.")
 
             transforme = Transformation(
-                source=file,
+                source=path,
                 transformation=transformation
             )
-            transforme.set_destination(destination_subdirectory)
+            transforme.set_destination(dst)
             transforme.transformations()
-    else:
-        if not os.path.exists(path) or not os.path.isfile(path):
-            raise ValueError("[-src] File doesn't exist.")
-
-        transforme = Transformation(
-            source=path,
-            transformation=transformation
-        )
-        transforme.set_destination(dst)
-        transforme.transformations()
+    except Exception as error:
+        print(f'Error: {error}')
 
 if __name__ == "__main__":
     main()
