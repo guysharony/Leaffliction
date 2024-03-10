@@ -235,8 +235,6 @@ class Transformation:
         plt.show()
 
     def colors(self):
-        # To finish
-
         mask, _ = pcv.create_labels(mask=self._kept_mask)
         pcv.analyze.color(
             rgb_img=self.image,
