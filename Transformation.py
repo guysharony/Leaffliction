@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
 from plantcv import plantcv as pcv
 
 
@@ -193,16 +194,58 @@ class Transformation:
 
         pcv.params.debug = None
 
+    def adjust_color_channels(self):
+        channels = [
+            'blue',
+            'blue-yellow',
+            'green',
+            'green-magenta',
+            'hue',
+            'lightness',
+            'red',
+            'saturation',
+            'value'
+        ]
+
+        plant_output = pcv.outputs.observations['plant_1']
+
+        for channel in channels:
+            label = f'{channel}_frequencies'
+            if label in plant_output.keys():
+                y = plant_output[label]['value']
+                x = plant_output[label]['label']
+
+                if channel in ('blue-yellow', 'green-magenta'):
+                    x = [x + 128 for x in x]
+
+                if channel in ('lightness', 'saturation', 'value'):
+                    x = [x * 2.55 for x in x]
+
+                if channel == 'hue':
+                    x = [x for x in x if 0 <= x <= 255]
+                    y = y[:len(x)]
+
+                plt.plot(x, y, label=channel)
+
+        plt.legend()
+        plt.title('Color histogram')
+        plt.xlabel('Pixel intensity')
+        plt.ylabel('Proportion of pixels (%)')
+        plt.grid(linestyle="--")
+        plt.show()
+
     def colors(self):
         # To finish
 
         mask, _ = pcv.create_labels(mask=self._kept_mask)
-        color_histogram = pcv.analyze.color(
+        pcv.analyze.color(
             rgb_img=self.image,
-            colorspaces='rgb',
+            colorspaces='all',
             labeled_mask=mask,
-            label="default"
+            label="plant"
         )
+
+        self.adjust_color_channels()
 
     def transformations(self):
         self.original()
@@ -279,36 +322,36 @@ def parser():
     )
 
 def main():
-    # try:
-    path, src, dst, transformation = parser()
+    try:
+        path, src, dst, transformation = parser()
 
-    if src and dst:
-        if not os.path.exists(src) or not os.path.isdir(src):
-            raise ValueError("[-src] Folder doesn't exist.")
+        if src and dst:
+            if not os.path.exists(src) or not os.path.isdir(src):
+                raise ValueError("[-src] Folder doesn't exist.")
 
-        for file in os.listdir(src):
-            if os.path.isdir(os.path.join(src, file)):
-                raise ValueError("[-src] Folder must contain only images to transforme.")
+            for file in os.listdir(src):
+                if os.path.isdir(os.path.join(src, file)):
+                    raise ValueError("[-src] Folder must contain only images to transforme.")
 
-        for file in os.listdir(src):
+            for file in os.listdir(src):
+                transforme = Transformation(
+                    source=os.path.join(src, file),
+                    transformation=transformation
+                )
+                transforme.set_destination(os.path.join(dst))
+                transforme.transformations()
+        else:
+            if not os.path.exists(path) or not os.path.isfile(path):
+                raise ValueError("[-src] File doesn't exist.")
+
             transforme = Transformation(
-                source=os.path.join(src, file),
+                source=path,
                 transformation=transformation
             )
-            transforme.set_destination(os.path.join(dst))
+            transforme.set_destination(dst)
             transforme.transformations()
-    else:
-        if not os.path.exists(path) or not os.path.isfile(path):
-            raise ValueError("[-src] File doesn't exist.")
-
-        transforme = Transformation(
-            source=path,
-            transformation=transformation
-        )
-        transforme.set_destination(dst)
-        transforme.transformations()
-    # except Exception as error:
-    #    print(f'Error: {error}')
+    except Exception as error:
+        print(f'Error: {error}')
 
 if __name__ == "__main__":
     main()
