@@ -319,64 +319,64 @@ class Transformation:
 
 def parser():
     parser = argparse.ArgumentParser(
-        description="""This is an image transformation program."""
+        description="An image processing tool for transforming and analyzing images."
     )
 
     parser.add_argument(
         'path',
         nargs='?',
         type=str,
-        help="Path of image to transform."
+        help="path to the image for transformation"
     )
     parser.add_argument(
         '-src',
         type=str,
         nargs=1,
         default=None,
-        help="Transform all images in a folder."
+        help="transform all images in a folder"
     )
     parser.add_argument(
         '-dst',
         type=str,
         nargs=1,
         default=None,
-        help="Destination of the transformed images."
+        help="destination directory for transformed images"
     )
 
     # Transformations
     parser.add_argument(
         '-original',
-        help="Get original picture",
+        help="extract the original image",
         action="store_true"
     )
     parser.add_argument(
         '-blur',
-        help="Get gaussian blur verion of picture",
+        help="apply Gaussian blur to the image",
         action="store_true"
     )
     parser.add_argument(
         '-mask',
-        help="Get mask of picture",
+        help="generate a mask for the image",
         action="store_true"
     )
     parser.add_argument(
         '-roi',
-        help="Get roi objects of picture",
+        help="detect and extract region of interest objects",
         action="store_true"
     )
     parser.add_argument(
         '-analyze',
-        help="Analyze objects of picture",
+        help="perform object analysis on the image",
         action="store_true"
     )
     parser.add_argument(
         '-pseudolandmarks',
-        help="Get pseudolandmarks of picture",
+        help="detect pseudolandmarks for the image",
         action="store_true"
     )
     parser.add_argument(
         '-colors',
-        help="Get color histogram repartition of picture",
+        help="generate color histogram distribution",
         action="store_true"
     )
 
