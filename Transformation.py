@@ -18,24 +18,30 @@ class Transformation:
         self.debug = 'plot'
         self.transformation = transformation
 
-    def _grayscale_hsv(self, channel: str, threshold: int, object_type: str = 'light'):
-        # Converting RGB image to HSV grayscale by extracting the saturation channel.
-        s_channel = pcv.rgb2gray_hsv(rgb_img=self.image, channel=channel)
+    def _grayscale_hsv(self, channel: str, threshold: int):
+        s_channel = pcv.rgb2gray_hsv(
+            rgb_img=self.image,
+            channel=channel
+        )
 
-       # Apply binary thresholding to grayscale image.
-        # Pixels with intensity values greater than the threshold will be classified as foreground (white),
-        # while pixels with intensity values less than or equal to the threshold will be classified as background (black).
-        s_binary = pcv.threshold.binary(gray_img=s_channel, threshold=threshold, object_type=object_type)
+        s_binary = pcv.threshold.binary(
+            gray_img=s_channel,
+            threshold=threshold,
+            object_type='light'
+        )
         return s_binary
 
-    def _grayscale_lab(self, channel: str, threshold: int, object_type: str = 'light'):
-        # Converting RGB image to LAB grayscale by extracting the B (blue-yellow) channel.
-        b_channel = pcv.rgb2gray_lab(rgb_img=self.image, channel=channel)
+    def _grayscale_lab(self, channel: str, threshold: int):
+        b_channel = pcv.rgb2gray_lab(
+            rgb_img=self.image,
+            channel=channel
+        )
 
-        # Apply binary thresholding to grayscale image.
-        # Pixels with intensity values greater than 130 will be classified as foreground (white),
-        # while pixels with intensity values less than or equal to 160 will be classified as background (black).
-        s_binary = pcv.threshold.binary(gray_img=b_channel, threshold=threshold, object_type=object_type)
+        s_binary = pcv.threshold.binary(
+            gray_img=b_channel,
+            threshold=threshold,
+            object_type='light'
+        )
         return s_binary
 
     def set_destination(self, destination):
@@ -95,27 +101,55 @@ class Transformation:
         return masked
 
     def plant_mask(self):
-        # Convert RGB to LAB and extract the Green-Magenta and Blue-Yellow channels
-        masked_a = pcv.rgb2gray_lab(rgb_img=self._background_mask, channel='a')
-        masked_b = pcv.rgb2gray_lab(rgb_img=self._background_mask, channel='b')
+        masked_a = pcv.rgb2gray_lab(
+            rgb_img=self._background_mask,
+            channel='a'
+        )
+        masked_b = pcv.rgb2gray_lab(
+            rgb_img=self._background_mask,
+            channel='b'
+        )
 
-        # Threshold the green-magenta and blue images
-        maskeda_thresh = pcv.threshold.binary(gray_img=masked_a, threshold=115, object_type='dark')
-        maskeda_thresh1 = pcv.threshold.binary(gray_img=masked_a, threshold=135, object_type='light')
-        maskedb_thresh = pcv.threshold.binary(gray_img=masked_b, threshold=128, object_type='light')
+        maskeda_thresh = pcv.threshold.binary(
+            gray_img=masked_a,
+            threshold=115,
+            object_type='dark'
+        )
+        maskeda_thresh1 = pcv.threshold.binary(
+            gray_img=masked_a,
+            threshold=135,
+            object_type='light'
+        )
+        maskedb_thresh = pcv.threshold.binary(
+            gray_img=masked_b,
+            threshold=128,
+            object_type='light'
+        )
 
         # Join the thresholded saturation and blue-yellow images (OR)
-        ab1 = pcv.logical_or(bin_img1=maskeda_thresh, bin_img2=maskedb_thresh)
-        ab = pcv.logical_or(bin_img1=maskeda_thresh1, bin_img2=ab1)
+        ab1 = pcv.logical_or(
+            bin_img1=maskeda_thresh,
+            bin_img2=maskedb_thresh
+        )
+        ab = pcv.logical_or(
+            bin_img1=maskeda_thresh1,
+            bin_img2=ab1
+        )
 
         # Fill small objects
-        plant_mask = pcv.fill(bin_img=ab, size=200)
+        plant_mask = pcv.fill(
+            bin_img=ab,
+            size=200
+        )
         self._plant_mask = plant_mask
         return plant_mask
 
     def mask(self):
-        # Apply mask (for VIS images, mask_color=white)
-        masked = pcv.apply_mask(self._background_mask, self._plant_mask, mask_color='white')
+        masked = pcv.apply_mask(
+            self._background_mask,
+            self._plant_mask,
+            mask_color='white'
+        )
         self.plot_image(masked, 'mask')
 
         self._mask = masked
@@ -173,18 +207,26 @@ class Transformation:
         self._kept_mask = kept_mask
 
     def analyze(self):
-        analyze = pcv.analyze.size(img=self.image, labeled_mask=self._plant_mask, n_labels=1)
+        analyze = pcv.analyze.size(
+            img=self.image,
+            labeled_mask=self._plant_mask,
+            n_labels=1
+        )
         self.plot_image(analyze, 'analyze')
 
     def pseudolandmarks(self):
-        if self.transformation in ('all', 'pseudolandmarks') and self.debug in ('plot', 'print'):
+        if self.transformation in ('all', 'pseudolandmarks') \
+                and self.debug in ('plot', 'print'):
             pcv.params.debug = self.debug
 
         output_image = os.path.join(
             pcv.params.debug_outdir,
             (str(pcv.params.device) + '_x_axis_pseudolandmarks.png')
         )
-        pcv.homology.x_axis_pseudolandmarks(img=self.image, mask=self._plant_mask)
+        pcv.homology.x_axis_pseudolandmarks(
+            img=self.image,
+            mask=self._plant_mask
+        )
 
         if self.debug in ('print'):
             image, _, _ = pcv.readimage(output_image)
@@ -243,7 +285,8 @@ class Transformation:
         plt.ylabel('Proportion of pixels (%)')
         plt.grid(linestyle="--")
 
-        if self.transformation in ('all', 'colors') and self.debug in ('plot', 'print'):
+        if self.transformation in ('all', 'colors') \
+                and self.debug in ('plot', 'print'):
             if self.debug == 'plot':
                 plt.show()
             elif self.debug == 'print':
@@ -273,31 +316,82 @@ class Transformation:
 
         self.colors()
 
+
 def parser():
     parser = argparse.ArgumentParser(
         description="""This is an image transformation program."""
     )
 
-    parser.add_argument('path', nargs='?', type=str, help="Path of image to transform.")
-    parser.add_argument('-src', type=str, nargs=1, default=None, help="Transform all images in a folder.")
-    parser.add_argument('-dst', type=str, nargs=1, default=None, help="Destination of the transformed images.")
+    parser.add_argument(
+        'path',
+        nargs='?',
+        type=str,
+        help="Path of image to transform."
+    )
+    parser.add_argument(
+        '-src',
+        type=str,
+        nargs=1,
+        default=None,
+        help="Transform all images in a folder."
+    )
+    parser.add_argument(
+        '-dst',
+        type=str,
+        nargs=1,
+        default=None,
+        help="Destination of the transformed images."
+    )
 
     # Transformations
-    parser.add_argument('-original', help="Get original picture", action="store_true")
-    parser.add_argument('-blur', help="Get gaussian blur verion of picture", action="store_true")
-    parser.add_argument('-mask', help="Get mask of picture", action="store_true")
-    parser.add_argument('-roi', help="Get roi objects of picture", action="store_true")
-    parser.add_argument('-analyze', help="Analyze objects of picture", action="store_true")
-    parser.add_argument('-pseudolandmarks', help="Get pseudolandmarks of picture", action="store_true")
-    parser.add_argument('-colors', help="Get color histogram repartition of picture", action="store_true")
+    parser.add_argument(
+        '-original',
+        help="Get original picture",
+        action="store_true"
+    )
+    parser.add_argument(
+        '-blur',
+        help="Get gaussian blur verion of picture",
+        action="store_true"
+    )
+    parser.add_argument(
+        '-mask',
+        help="Get mask of picture",
+        action="store_true"
+    )
+    parser.add_argument(
+        '-roi',
+        help="Get roi objects of picture",
+        action="store_true"
+    )
+    parser.add_argument(
+        '-analyze',
+        help="Analyze objects of picture",
+        action="store_true"
+    )
+    parser.add_argument(
+        '-pseudolandmarks',
+        help="Get pseudolandmarks of picture",
+        action="store_true"
+    )
+    parser.add_argument(
+        '-colors',
+        help="Get color histogram repartition of picture",
+        action="store_true"
+    )
 
     # Parser
     args = parser.parse_args(sys.argv[1::])
 
     if args.src and not args.dst:
-        raise ValueError("[-dst] Destination folder not specified.")
+        raise ValueError(
+            "[-dst] Destination folder not specified."
+        )
     elif args.src and args.path:
-        raise ValueError("[-src, -path] Source and path cannot be specified at the same time.")
+        raise ValueError(
+            "[-src, -path] Source and path cannot be \
+                specified at the same time."
+        )
 
     transformations = np.array([
         'original',
@@ -321,14 +415,22 @@ def parser():
 
     transformation_options = transformations[options]
     if len(transformation_options) > 1:
-        raise ValueError("[transformation] Only 1 transformation can be specified.")
+        raise ValueError(
+            "[transformation] Only 1 transformation can be specified."
+        )
+
+    if len(transformation_options) == 1:
+        transformation_value = transformation_options[0]
+    else:
+        transformation_value = 'all'
 
     return (
         args.path,
         args.src[0] if args.src else None,
         args.dst[0] if args.dst else None,
-        transformation_options[0] if len(transformation_options) == 1 else 'all'
+        transformation_value
     )
+
 
 def main():
     try:
@@ -336,11 +438,15 @@ def main():
 
         if src and dst:
             if not os.path.exists(src) or not os.path.isdir(src):
-                raise ValueError("[-src] Folder doesn't exist.")
+                raise ValueError(
+                    "[-src] Folder doesn't exist."
+                )
 
             for file in os.listdir(src):
                 if os.path.isdir(os.path.join(src, file)):
-                    raise ValueError("[-src] Folder must contain only images to transforme.")
+                    raise ValueError(
+                        "[-src] Folder must contain only images to transforme."
+                    )
 
             for file in os.listdir(src):
                 transforme = Transformation(
@@ -361,6 +467,7 @@ def main():
             transforme.transformations()
     except Exception as error:
         print(f'Error: {error}')
+
 
 if __name__ == "__main__":
     main()
