@@ -289,7 +289,7 @@ def parser():
     parser.add_argument('-roi', help="Get roi objects of picture", action="store_true")
     parser.add_argument('-analyze', help="Analyze objects of picture", action="store_true")
     parser.add_argument('-pseudolandmarks', help="Get pseudolandmarks of picture", action="store_true")
-    parser.add_argument('-colors', help="Get color repartition of picture", action="store_true")
+    parser.add_argument('-colors', help="Get color histogram repartition of picture", action="store_true")
 
     # Parser
     args = parser.parse_args(sys.argv[1::])
