@@ -62,7 +62,6 @@ class Transformation:
                 )
             )
         else:
-            print(image)
             pcv.plot_image(
                 image
             )
@@ -194,7 +193,7 @@ class Transformation:
 
         pcv.params.debug = None
 
-    def adjust_color_channels(self):
+    def _adjust_color_channels(self):
         channels = [
             'blue',
             'blue-yellow',
@@ -227,13 +226,6 @@ class Transformation:
 
                 plt.plot(x, y, label=channel)
 
-        plt.legend()
-        plt.title('Color histogram')
-        plt.xlabel('Pixel intensity')
-        plt.ylabel('Proportion of pixels (%)')
-        plt.grid(linestyle="--")
-        plt.show()
-
     def colors(self):
         mask, _ = pcv.create_labels(mask=self._kept_mask)
         pcv.analyze.color(
@@ -243,7 +235,26 @@ class Transformation:
             label="plant"
         )
 
-        self.adjust_color_channels()
+        self._adjust_color_channels()
+
+        plt.legend()
+        plt.title('Color histogram')
+        plt.xlabel('Pixel intensity')
+        plt.ylabel('Proportion of pixels (%)')
+        plt.grid(linestyle="--")
+
+        if self.transformation in ('all', 'colors') and self.debug in ('plot', 'print'):
+            if self.debug == 'plot':
+                plt.show()
+            elif self.debug == 'print':
+                plt.savefig(
+                    os.path.join(
+                        self.outdir,
+                        f'{self.image_name}_colors.jpg'
+                    )
+                )
+
+        plt.close()
 
     def transformations(self):
         self.original()
