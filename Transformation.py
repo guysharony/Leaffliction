@@ -319,7 +319,9 @@ class Transformation:
 
 def parser():
     parser = argparse.ArgumentParser(
-        description="An image processing tool for transforming and analyzing images."
+        description="""
+            An image processing tool for transforming and analyzing images.
+        """
     )
 
     parser.add_argument(
