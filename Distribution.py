@@ -19,7 +19,7 @@ def count_jpg_files(category_counts: dict, directory_path: str):
     category_counts[directory_name] = file_count
 
 
-def plot_pie_chart(ax: "plt.axes._axes.Axes", category_counts: dict, title: str):
+def plot_pie_chart(ax, category_counts: dict, title: str):
     """
     Plot a pie chart showing the distribution of file counts across categories.
 
