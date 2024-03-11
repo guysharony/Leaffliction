@@ -198,7 +198,8 @@ def augment_category(category: str, current_count: int, target_count: int):
     }
 
     source_path = f"./datasets/images/{category_prefix}/{category}"
-    destination_path = "./datasets/augmented_directory/images"
+    destination_path = \
+        f"./datasets/augmented_directory/images/{category_prefix}/{category}"
 
     for file in sorted_files:
         if current_count == target_count:
@@ -210,7 +211,7 @@ def augment_category(category: str, current_count: int, target_count: int):
                 return
             augmented_image = function(image)
             plt.imsave(
-                f"{destination_path}/{category_prefix}/{category}/{filename}_{augmentation_type}.JPG",
+                f"{destination_path}/{filename}_{augmentation_type}.JPG",
                 augmented_image,
             )
             current_count += 1
