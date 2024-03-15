@@ -84,7 +84,7 @@ def main():
     validation_accuracy = history.history["val_accuracy"][-1]
 
     print(f"Training Accuracy: {train_accuracy:.4f}")
-    print(f"Validation Accuracy: {val_accuracy:.4f}")
+    print(f"Validation Accuracy: {validation_accuracy:.4f}")
 
     # Prediction
     print(model.predict(validation_data))
