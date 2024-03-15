@@ -33,11 +33,13 @@ def build_model(number_classes):
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
     model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
     # Layers
     model.add(layers.Flatten())
-    model.add(layers.Dense(64, activation="relu"))
-    model.add(layers.Dense(64, activation="relu"))
+    model.add(layers.Dense(128, activation="relu"))
+    model.add(layers.Dense(128, activation="relu"))
     model.add(layers.Dropout(0.1))
     model.add(layers.Dense(number_classes, activation="softmax"))
 
