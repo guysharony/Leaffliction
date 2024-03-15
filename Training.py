@@ -31,12 +31,14 @@ def build_model(number_classes):
     # Blocks
     model.add(
         layers.Conv2D(
-            filters=32, kernel_size=(3, 3), activation="relu", input_shape=(256, 256, 3)
+            filters=16, kernel_size=3, activation="relu", input_shape=(256, 256, 3)
         )
     )
-    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-    model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
-    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    model.add(layers.MaxPooling2D(pool_size=2))
+    model.add(layers.Conv2D(filters=32, kernel_size=3, activation="relu"))
+    model.add(layers.MaxPooling2D(pool_size=2))
+    model.add(layers.Conv2D(filters=64, kernel_size=3, activation="relu"))
+    model.add(layers.MaxPooling2D(pool_size=2))
 
     # Layers
     model.add(layers.Flatten())
@@ -67,12 +69,22 @@ def main():
     print(model.summary())
 
     # Training
-    model.fit(
+    early_stopping = callbacks.EarlyStopping(
+        monitor="val_loss", patience=5, restore_best_weights=True
+    )
+
+    history = model.fit(
         training_data,
         validation_data=validation_data,
         epochs=3,
-        callbacks=[callbacks.EarlyStopping(monitor="val_loss", patience=5)],
+        callbacks=[early_stopping],
+        use_multiprocessing=True,
     )
+    train_accuracy = history.history["accuracy"][-1]
+    validation_accuracy = history.history["val_accuracy"][-1]
+
+    print(f"Training Accuracy: {train_accuracy:.4f}")
+    print(f"Validation Accuracy: {val_accuracy:.4f}")
 
     # Prediction
     print(model.predict(validation_data))
