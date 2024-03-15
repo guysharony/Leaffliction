@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 def main():
     # Load image
     img = cv2.imread("./datasets/images/Apple/Apple_healthy/image (1).JPG")
-    img = cv2.resize(img, (224, 224))
 
     # VGG16
     model = keras.Sequential()
