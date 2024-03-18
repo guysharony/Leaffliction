@@ -39,7 +39,6 @@ def build_model(number_classes):
     # Layers
     model.add(layers.Flatten())
     model.add(layers.Dense(128, activation="relu"))
-    model.add(layers.Dense(128, activation="relu"))
     model.add(layers.Dropout(0.5))
     model.add(layers.Dense(number_classes, activation="softmax"))
 
@@ -57,6 +56,8 @@ def main():
         raise ValueError("usage: python Training.py [images folder]")
 
     batch_size = 32
+
+    ## !!Appeller balence_dataset dans le program Augmentation.py!!
 
     # Dataset
     training_data, validation_data = preparing_dataset(sys.argv[1])
