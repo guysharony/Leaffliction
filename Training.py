@@ -40,7 +40,7 @@ def build_model(number_classes):
     model.add(layers.Flatten())
     model.add(layers.Dense(128, activation="relu"))
     model.add(layers.Dense(128, activation="relu"))
-    model.add(layers.Dropout(0.1))
+    model.add(layers.Dropout(0.5))
     model.add(layers.Dense(number_classes, activation="softmax"))
 
     model.compile(
@@ -72,7 +72,7 @@ def main():
     model.fit(
         training_data,
         validation_data=validation_data,
-        epochs=3,
+        epochs=5,
         callbacks=[callbacks.EarlyStopping(monitor="val_loss", patience=10)],
     )
 
