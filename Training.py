@@ -2,6 +2,7 @@ import sys
 import matplotlib.pyplot as plt
 
 import tensorflow as ts
+import matplotlib.pyplot as plt
 
 from keras import models, layers, losses, callbacks
 from keras.utils import image_dataset_from_directory
@@ -26,34 +27,28 @@ def preparing_dataset(directory):
 
 
 def build_model(number_classes):
+    # Initialize model
     model = models.Sequential()
-    model.layers.append(layers.Rescaling(1.0 / 255))
 
-    # Blocks 1
-    model.add(layers.Conv2D(filters=16, kernel_size=(3, 3), activation="relu"))
-    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    # Rescaling layer
+    model.add(layers.Rescaling(1.0 / 255))
 
-    # Block 2
-    model.add(layers.Conv2D(filters=32, kernel_size=(3, 3), activation="relu"))
-    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    # Blocks 1-5
+    for filters in [16, 32, 64, 128, 128]:
+        model.add(layers.Conv2D(filters=filters, kernel_size=(3, 3), activation="relu"))
+        model.add(layers.BatchNormalization())
+        model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
-    # Block 3
-    model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
-    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-
-    # Block 4
-    model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), activation="relu"))
-    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-
-    # Block 5
-    model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), activation="relu"))
-    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-
-    # Layers
+    # Flatten
     model.add(layers.Flatten())
+
+    # Dense layers with dropout
     model.add(layers.Dense(256, activation="relu"))
-    model.add(layers.Dropout(0.1))
+    model.add(layers.Dropout(0.5))
     model.add(layers.Dense(256, activation="relu"))
+    model.add(layers.Dropout(0.5))
+
+    # Output layer
     model.add(layers.Dense(number_classes, activation="softmax"))
 
     model.compile(
@@ -65,11 +60,44 @@ def build_model(number_classes):
     return model
 
 
+def plotting_evolution(history):
+    # Loss history
+    training_loss = history.history["loss"]
+    validation_loss = history.history["val_loss"]
+
+    # Accuracy history
+    training_accuracy = history.history["accuracy"]
+    validation_accuracy = history.history["val_accuracy"]
+
+    # Figures
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10))
+
+    # Plot training & validation loss values
+    ax1.plot(training_loss, label="Training Loss")
+    ax1.plot(validation_loss, label="Validation Loss")
+    ax1.set_title("Model Loss")
+    ax1.set_ylabel("Loss")
+    ax1.set_xlabel("Epoch")
+    ax1.legend()
+
+    # Plot training & validation accuracy values
+    ax2.plot(training_accuracy, label="Training Accuracy")
+    ax2.plot(validation_accuracy, label="Validation Accuracy")
+    ax2.set_title("Model Accuracy")
+    ax2.set_ylabel("Accuracy")
+    ax2.set_xlabel("Epoch")
+    ax2.legend()
+
+    # Adjust layout
+    plt.tight_layout()
+
+    # Show plot
+    plt.show()
+
+
 def main():
     if len(sys.argv) != 2:
         raise ValueError("usage: python Training.py [images folder]")
-
-    batch_size = 32
 
     # Balance dataset
     balanced_source = balance_dataset(sys.argv[1])
@@ -85,22 +113,19 @@ def main():
     print(model.summary())
 
     # Training
+    early_stopping = callbacks.EarlyStopping(monitor="val_loss", patience=5)
+
+    reduce_lr = callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.2, patience=5)
+
     history = model.fit(
         training_data,
         validation_data=validation_data,
         epochs=10,
-        callbacks=[callbacks.EarlyStopping(monitor="val_loss", patience=10)],
+        callbacks=[early_stopping, reduce_lr],
     )
 
-    # Precision
-    accuracy = history.history["accuracy"]
-    val_accuracy = history.history["val_accuracy"]
-
-    loss = history.history["loss"]
-    val_loss = history.history["val_loss"]
-
-    print(f"Loss: {val_loss[-1]}")
-    print(f"Accuracy: {val_accuracy[-1]}")
+    # Plotting evolution
+    plotting_evolution(history)
 
 
 if __name__ == "__main__":
