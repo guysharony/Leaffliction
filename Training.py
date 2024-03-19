@@ -28,18 +28,31 @@ def build_model(number_classes):
     model = models.Sequential()
     model.layers.append(layers.Rescaling(1.0 / 255))
 
-    # Blocks
+    # Blocks 1
+    model.add(layers.Conv2D(filters=16, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+
+    # Block 2
     model.add(layers.Conv2D(filters=32, kernel_size=(3, 3), activation="relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+
+    # Block 3
     model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+
+    # Block 4
+    model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+
+    # Block 5
     model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), activation="relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
     # Layers
     model.add(layers.Flatten())
-    model.add(layers.Dense(128, activation="relu"))
+    model.add(layers.Dense(256, activation="relu"))
     model.add(layers.Dropout(0.5))
+    model.add(layers.Dense(256, activation="relu"))
     model.add(layers.Dense(number_classes, activation="softmax"))
 
     model.compile(
@@ -57,8 +70,6 @@ def main():
 
     batch_size = 32
 
-    ## !!Appeller balence_dataset dans le program Augmentation.py!!
-
     # Dataset
     training_data, validation_data = preparing_dataset(sys.argv[1])
 
@@ -70,15 +81,22 @@ def main():
     print(model.summary())
 
     # Training
-    model.fit(
+    history = model.fit(
         training_data,
         validation_data=validation_data,
-        epochs=5,
+        epochs=10,
         callbacks=[callbacks.EarlyStopping(monitor="val_loss", patience=10)],
     )
 
-    # Prediction
-    print(model.predict(validation_data))
+    # Precision
+    accuracy = history.history["accuracy"]
+    val_accuracy = history.history["val_accuracy"]
+
+    loss = history.history["loss"]
+    val_loss = history.history["val_loss"]
+
+    print(f"Loss: {val_loss[-1]}")
+    print(f"Accuracy: {val_accuracy[-1]}")
 
 
 if __name__ == "__main__":
