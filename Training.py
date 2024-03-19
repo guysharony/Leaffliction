@@ -110,7 +110,7 @@ def main():
     model.build(input_shape=(None, 256, 256, 3))
 
     # Summary
-    print(model.summary())
+    model.summary()
 
     # Training
     early_stopping = callbacks.EarlyStopping(monitor="val_loss", patience=5)
