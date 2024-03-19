@@ -5,6 +5,7 @@ import tensorflow as ts
 
 from keras import models, layers, losses, callbacks
 from keras.utils import image_dataset_from_directory
+from Augmentation import balance_dataset
 
 
 def preparing_dataset(directory):
@@ -51,7 +52,7 @@ def build_model(number_classes):
     # Layers
     model.add(layers.Flatten())
     model.add(layers.Dense(256, activation="relu"))
-    model.add(layers.Dropout(0.5))
+    model.add(layers.Dropout(0.1))
     model.add(layers.Dense(256, activation="relu"))
     model.add(layers.Dense(number_classes, activation="softmax"))
 
@@ -70,8 +71,11 @@ def main():
 
     batch_size = 32
 
+    # Balance dataset
+    balanced_source = balance_dataset(sys.argv[1])
+
     # Dataset
-    training_data, validation_data = preparing_dataset(sys.argv[1])
+    training_data, validation_data = preparing_dataset(balanced_source)
 
     # Model
     model = build_model(len(training_data.class_names))
