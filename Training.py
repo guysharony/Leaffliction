@@ -36,21 +36,21 @@ def build_model(number_classes):
     # Blocks 1-5
     for filters in [16, 32, 64, 128, 128]:
         model.add(layers.Conv2D(filters=filters, kernel_size=(3, 3), activation="relu"))
-        model.add(layers.BatchNormalization())
         model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+        model.add(layers.Dropout(0.25))
 
     # Flatten
     model.add(layers.Flatten())
 
     # Dense layers with dropout
-    model.add(layers.Dense(256, activation="relu"))
-    model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(256, activation="relu"))
+    model.add(layers.Dense(128, activation="relu"))
+    model.add(layers.Dense(128, activation="relu"))
     model.add(layers.Dropout(0.5))
 
     # Output layer
     model.add(layers.Dense(number_classes, activation="softmax"))
 
+    # Compile
     model.compile(
         optimizer="adam",
         loss=losses.SparseCategoricalCrossentropy(),
