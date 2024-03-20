@@ -11,7 +11,7 @@ def build_model(training_data, summary=False):
     # Rescaling layer
     model.add(layers.Rescaling(1.0 / 255))
 
-    # Blocks 1-4
+    # Blocks 1-3
     for f in [32, 64, 64]:
         model.add(layers.Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
         model.add(layers.MaxPooling2D(pool_size=(2, 2)))
