@@ -5,6 +5,7 @@ from tensorflow.keras.layers import GlobalAveragePooling2D, Dense
 from tensorflow.keras.models import Model
 from Augmentation import balance_dataset
 import matplotlib.pyplot as plt
+import zipfile 
 
 def load_data(directory):
     image_dims = (224, 224)
@@ -49,7 +50,7 @@ def build_model(base_model, num_classes):
       prediction_layer
     ])
 
-    base_learning_rate = 0.0001
+    base_learning_rate = 0.001
     
     model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=base_learning_rate),
                   loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
@@ -77,6 +78,8 @@ def plot_accuracy_loss(acc, val_acc, loss, val_loss):
     plt.xlabel('epoch')
     plt.show()
 
+
+
 def train_model(train_generator, validation_generator, epochs):
     base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 
@@ -95,17 +98,21 @@ def train_model(train_generator, validation_generator, epochs):
     val_loss = history.history['val_loss']  
 
     plot_accuracy_loss(acc, val_acc, loss, val_loss)
+    return model
+
 
 
 if __name__ == "__main__":
 
     # balance_dataset('./datasets/images')
-    directory = "./datasets/augmented_directory/images/Apple"
+    directory = "./datasets/augmented_directory/images"
     
     train_generator, validation_generator, num_classes = load_data(directory)
 
-    train_model(train_generator, validation_generator, epochs=7)
+    model = train_model(train_generator, validation_generator, epochs=2)
 
+    with zipfile.ZipFile('trained_model.zip', 'w') as zipf:
+        model.save('model.h5')
 
     
 
