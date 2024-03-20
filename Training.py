@@ -20,7 +20,7 @@ def main():
     model = build_model(training_data, True)
 
     # TensorBoard
-    log_dir = f"logs/filters/conv2D_32-64-128-128_regularize"
+    log_dir = f"logs/filters/conv2D_32-64-128_regularize"
     tensorboard_callback = callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
     history = model.fit(

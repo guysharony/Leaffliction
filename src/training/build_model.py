@@ -12,7 +12,7 @@ def build_model(training_data, summary=False):
     model.add(layers.Rescaling(1.0 / 255))
 
     # Blocks 1-4
-    for f in [32, 64, 128, 128]:
+    for f in [32, 64, 128]:
         model.add(layers.Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
         model.add(layers.MaxPooling2D(pool_size=(2, 2)))
 
