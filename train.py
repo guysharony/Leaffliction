@@ -1,3 +1,5 @@
+import sys
+import os
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2
@@ -103,16 +105,22 @@ def train_model(train_generator, validation_generator, epochs):
 
 
 if __name__ == "__main__":
+    try:
+        assert len(sys.argv) == 2, "Only one argument required."
+        directory_path = sys.argv[1]
 
-    # balance_dataset('./datasets/images')
-    directory = "./datasets/augmented_directory/images"
-    
-    train_generator, validation_generator, num_classes = load_data(directory)
+        # balance_dataset('./datasets/images')
+        # directory = "./datasets/augmented_directory/images"
 
-    model = train_model(train_generator, validation_generator, epochs=2)
+        train_generator, validation_generator, num_classes = load_data(directory_path)
 
-    with zipfile.ZipFile('trained_model.zip', 'w') as zipf:
-        model.save('model.h5')
+        model = train_model(train_generator, validation_generator, epochs=2)
 
+        with zipfile.ZipFile('trained_model.zip', 'w') as zipf:
+            model.save('model.h5')
+
+        print('saved model to trained_model.zip')
+    except Exception as error:
+        print(f"error: {error}")
     
 
