@@ -1,8 +1,9 @@
 import sys
 
-from src.training.build_model import build_model
-from src.training.load_dataset import load_dataset
-from src.training.plotting import plotting_evolution
+from src.train.save_model import save_model
+from src.train.build_model import build_model
+from src.train.load_dataset import load_dataset
+from src.train.plotting import plotting_evolution
 
 
 def main():
@@ -30,11 +31,14 @@ def main():
     history = model.fit(
         training_data,
         validation_data=validation_data,
-        epochs=15,
+        epochs=5,
     )
 
     # Plotting evolution
     plotting_evolution(history)
+
+    # Saving model
+    save_model(model)
 
 
 if __name__ == "__main__":
