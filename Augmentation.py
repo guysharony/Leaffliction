@@ -43,10 +43,7 @@ def rotation(image):
     height, width = image.shape[:2]
     angle = np.random.randint(0, 360)
 
-    rotation_matrix = cv2.getRotationMatrix2D(
-        (width // 2, height // 2),
-        angle,
-        1)
+    rotation_matrix = cv2.getRotationMatrix2D((width // 2, height // 2), angle, 1)
 
     rotated_image = cv2.warpAffine(
         image, rotation_matrix, (width, height), borderMode=cv2.BORDER_CONSTANT
@@ -67,8 +64,7 @@ def brightness(image):
     assert image is not None, "File could not be read"
 
     brightness_factor = np.random.uniform(1.5, 2.5)
-    brightened_image = np.clip(image * brightness_factor,
-                               0, 255).astype(np.uint8)
+    brightened_image = np.clip(image * brightness_factor, 0, 255).astype(np.uint8)
 
     return brightened_image
 
@@ -106,8 +102,7 @@ def crop(image):
     start = np.random.randint(0, 100)
 
     cropped = image[start:height, start:width]
-    resized = cv2.resize(cropped,
-                         (height, width), interpolation=cv2.INTER_AREA)
+    resized = cv2.resize(cropped, (height, width), interpolation=cv2.INTER_AREA)
 
     return resized
 
@@ -185,8 +180,7 @@ def augment_category(category: str, current_count: int, target_count: int):
     """
     category_prefix = category.split("_")[0]
     file_list = os.listdir(f"./datasets/images/{category_prefix}/{category}")
-    sorted_files = sorted(file_list,
-                          key=lambda x: int(x.split("(")[1].split(")")[0]))
+    sorted_files = sorted(file_list, key=lambda x: int(x.split("(")[1].split(")")[0]))
 
     augmentation_functions = {
         "Flip": flip,
@@ -198,8 +192,9 @@ def augment_category(category: str, current_count: int, target_count: int):
     }
 
     source_path = f"./datasets/images/{category_prefix}/{category}"
-    destination_path = \
+    destination_path = (
         f"./datasets/augmented_directory/images/{category_prefix}/{category}"
+    )
 
     for file in sorted_files:
         if current_count == target_count:
@@ -231,7 +226,7 @@ def balance_dataset(dataset_path):
         src = "./datasets/"
         dest = "./datasets/augmented_directory"
         shutil.copytree(src, dest)
-        print(f'Copied {src} to {dest}')
+        print(f"Copied {src} to {dest}")
 
     category_counts = {}
 
