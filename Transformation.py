@@ -392,12 +392,15 @@ def parser():
     parser.add_argument(
         "path",
         nargs="?",
-        nargs=1,
         type=str,
         help="path to the image for transformation",
     )
     parser.add_argument(
-        "-src", type=str, nargs=1, default=None, help="transform all images in a folder"
+        "-src",
+        type=str,
+        nargs=1,
+        default=None,
+        help="transform all images in a folder"
     )
     parser.add_argument(
         "-dst",
@@ -409,13 +412,19 @@ def parser():
 
     # Transformations
     parser.add_argument(
-        "-original", help="extract the original image", action="store_true"
+        "-original",
+        help="extract the original image",
+        action="store_true"
     )
     parser.add_argument(
-        "-blur", help="apply Gaussian blur to the image", action="store_true"
+        "-blur",
+        help="apply Gaussian blur to the image",
+        action="store_true"
     )
     parser.add_argument(
-        "-mask", help="generate a mask for the image", action="store_true"
+        "-mask",
+        help="generate a mask for the image",
+        action="store_true"
     )
     parser.add_argument(
         "-roi",
@@ -423,7 +432,9 @@ def parser():
         action="store_true",
     )
     parser.add_argument(
-        "-analyze", help="perform object analysis on the image", action="store_true"
+        "-analyze",
+        help="perform object analysis on the image",
+        action="store_true"
     )
     parser.add_argument(
         "-pseudolandmarks",
@@ -431,7 +442,9 @@ def parser():
         action="store_true",
     )
     parser.add_argument(
-        "-colors", help="generate color histogram distribution", action="store_true"
+        "-colors",
+        help="generate color histogram distribution",
+        action="store_true"
     )
 
     # Parser
@@ -446,7 +459,15 @@ def parser():
         )
 
     transformations = np.array(
-        ["original", "blur", "mask", "roi", "analyze", "pseudolandmarks", "colors"]
+        [
+            "original",
+            "blur",
+            "mask",
+            "roi",
+            "analyze",
+            "pseudolandmarks",
+            "colors"
+        ]
     )
 
     options = np.array(
@@ -463,7 +484,9 @@ def parser():
 
     transformation_options = transformations[options]
     if len(transformation_options) > 1:
-        raise ValueError("[transformation] Only 1 transformation can be specified.")
+        raise ValueError(
+            "[transformation] Only 1 transformation can be specified."
+        )
 
     if len(transformation_options) == 1:
         transformation_value = transformation_options[0]
@@ -503,7 +526,8 @@ def main():
 
             for file in os.listdir(src):
                 transforme = Transformation(
-                    source=os.path.join(src, file), transformation=transformation
+                    source=os.path.join(src, file),
+                    transformation=transformation
                 )
                 transforme.set_destination(os.path.join(dst))
                 transforme.transformations()
@@ -511,7 +535,10 @@ def main():
             if not os.path.exists(path) or not os.path.isfile(path):
                 raise ValueError("[-src] File doesn't exist.")
 
-            transforme = Transformation(source=path, transformation=transformation)
+            transforme = Transformation(
+                source=path,
+                transformation=transformation
+            )
             transforme.set_destination(dst)
             transforme.transformations()
     except Exception as error:
