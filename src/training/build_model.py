@@ -1,8 +1,24 @@
-from keras import models, layers, losses, callbacks, regularizers
-from keras.optimizers import Adam, AdamW
+from keras import models
+from keras import layers
+from keras import losses
+
+from keras.optimizers import Adam
 
 
 def build_model(training_data, summary=False):
+    """
+    Builds and compiles a convolutional neural network model for image
+    classification.
+
+    Args:
+        training_data: A dataset containing training images and labels.
+        summary (bool, optional): Whether to print the model summary.
+            Defaults to False.
+
+    Returns:
+        keras.models.Sequential: A compiled convolutional neural network model.
+
+    """
     number_classes = len(training_data.class_names)
 
     # Initialize model
@@ -11,11 +27,20 @@ def build_model(training_data, summary=False):
     # Rescaling layer
     model.add(layers.Rescaling(1.0 / 255))
 
-    # Blocks 1-3
-    for f in [32, 64, 64]:
-        model.add(layers.Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
-        model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-        model.add(layers.Dropout(0.1))
+    # Blocks 1
+    model.add(layers.Conv2D(filters=32, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    model.add(layers.Dropout(0.1))
+
+    # Blocks 2
+    model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    model.add(layers.Dropout(0.1))
+
+    # Blocks 3
+    model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    model.add(layers.Dropout(0.1))
 
     # Flatten
     model.add(layers.Flatten())

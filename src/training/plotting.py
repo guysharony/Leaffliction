@@ -2,6 +2,14 @@ import matplotlib.pyplot as plt
 
 
 def plotting_evolution(history):
+    """
+    Plots the training and validation loss and accuracy evolution over epochs.
+
+    Args:
+        history (keras.callbacks.History): History object returned by the
+            model's fit method.
+    """
+
     # Loss history
     training_loss = history.history["loss"]
     validation_loss = history.history["val_loss"]

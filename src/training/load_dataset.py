@@ -4,6 +4,16 @@ from keras.utils import image_dataset_from_directory
 
 
 def load_dataset(path):
+    """
+    Loads and prepares a dataset of images for training a neural network model.
+
+    Args:
+        path (str): The path to the directory containing the dataset.
+
+    Returns:
+        tuple: A tuple containing training and validation datasets.
+
+    """
     # Balance dataset
     balanced_source = balance_dataset(path)
 
