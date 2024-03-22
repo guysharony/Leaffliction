@@ -13,13 +13,13 @@ def main():
         ValueError: If the number of command-line arguments is not 2.
 
     Usage:
-        python Training.py [images folder]
+        python train.py [images folder]
 
     Args:
         sys.argv: Command-line arguments passed to the program.
     """
     if len(sys.argv) != 2:
-        raise ValueError("usage: python Training.py [images folder]")
+        raise ValueError("usage: python train.py [images folder]")
 
     # Dataset
     training_data, validation_data = load_dataset(sys.argv[1])
