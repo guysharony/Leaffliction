@@ -1,6 +1,7 @@
 from keras import models
 from keras import layers
 from keras import losses
+from keras import regularizers
 
 from keras.optimizers import Adam
 
@@ -30,12 +31,10 @@ def build_model(training_data, summary=False):
     # Blocks 1
     model.add(layers.Conv2D(filters=32, kernel_size=(3, 3), activation="relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-    model.add(layers.Dropout(0.1))
 
     # Blocks 2
     model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
-    model.add(layers.Dropout(0.1))
 
     # Blocks 3
     model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
@@ -43,7 +42,7 @@ def build_model(training_data, summary=False):
     model.add(layers.Dropout(0.1))
 
     # Blocks 4
-    model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), activation="relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
     model.add(layers.Dropout(0.1))
 
@@ -51,7 +50,7 @@ def build_model(training_data, summary=False):
     model.add(layers.Flatten())
 
     # Dense layers with dropout
-    model.add(layers.Dense(128, activation="relu"))
+    model.add(layers.Dense(128, activation="relu", kernel_regularizer=regularizers.l2(0.01)))
 
     # Output layer
     model.add(layers.Dense(number_classes, activation="softmax"))
