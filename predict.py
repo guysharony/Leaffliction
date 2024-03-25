@@ -20,9 +20,9 @@ def preprocess_image(image_path: str) -> 'np.ndarray':
     Returns:
         'np.ndarray': Preprocessed image array
     """
-    img = image.load_img(image_path, target_size=(224, 224))
+    img = image.load_img(image_path, target_size=(256, 256))
     img_array = image.img_to_array(img)
-    return np.expand_dims(img_array, axis=0) / 255.0
+    return np.expand_dims(img_array, axis=0)
 
 
 def load_and_predict(image_path: str,
@@ -40,6 +40,7 @@ def load_and_predict(image_path: str,
         int: The predicted class index.
     """
     prediction = model.predict(preprocess_image(image_path))
+
     return np.argmax(prediction)
 
 
@@ -147,7 +148,7 @@ if __name__ == "__main__":
         main_directory = os.path.dirname(sub_directory)
 
         # load the saved model
-        model = tf.keras.models.load_model("model.h5")
+        model = tf.keras.models.load_model("model.keras")
 
         class_labels = get_class_labels(main_directory)
         predicted_class = load_and_predict(image_path, model)
