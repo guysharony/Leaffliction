@@ -22,7 +22,7 @@ def preprocess_image(image_path: str) -> 'np.ndarray':
     """
     img = image.load_img(image_path, target_size=(256, 256))
     img_array = image.img_to_array(img)
-    return np.expand_dims(img_array, axis=0) / 255.0
+    return np.expand_dims(img_array, axis=0)
 
 
 def load_and_predict(image_path: str,
@@ -40,6 +40,7 @@ def load_and_predict(image_path: str,
         int: The predicted class index.
     """
     prediction = model.predict(preprocess_image(image_path))
+
     return np.argmax(prediction)
 
 
