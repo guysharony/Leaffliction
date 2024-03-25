@@ -42,11 +42,16 @@ def build_model(training_data, summary=False):
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
     model.add(layers.Dropout(0.1))
 
+    # Blocks 4
+    model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+    model.add(layers.Dropout(0.1))
+
     # Flatten
     model.add(layers.Flatten())
 
     # Dense layers with dropout
-    model.add(layers.Dense(64, activation="relu"))
+    model.add(layers.Dense(128, activation="relu"))
 
     # Output layer
     model.add(layers.Dense(number_classes, activation="softmax"))

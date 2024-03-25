@@ -31,7 +31,7 @@ def main():
     history = model.fit(
         training_data,
         validation_data=validation_data,
-        epochs=5,
+        epochs=15,
     )
 
     # Plotting evolution
