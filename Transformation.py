@@ -511,39 +511,39 @@ def main():
                     non-image files, or if the specified file path doesn't
                     exist.
     """
-    try:
-        path, src, dst, transformation = parser()
+    path, src, dst, transformation = parser()
 
-        if src and dst:
-            if not os.path.exists(src) or not os.path.isdir(src):
-                raise ValueError("[-src] Folder doesn't exist.")
+    if src and dst:
+        if not os.path.exists(src) or not os.path.isdir(src):
+            raise ValueError("[-src] Folder doesn't exist.")
 
-            for file in os.listdir(src):
-                if os.path.isdir(os.path.join(src, file)):
-                    raise ValueError(
-                        "[-src] Folder must contain only images to transforme."
-                    )
-
-            for file in os.listdir(src):
-                transforme = Transformation(
-                    source=os.path.join(src, file),
-                    transformation=transformation
+        for file in os.listdir(src):
+            if os.path.isdir(os.path.join(src, file)):
+                raise ValueError(
+                    "[-src] Folder must contain only images to transforme."
                 )
-                transforme.set_destination(os.path.join(dst))
-                transforme.transformations()
-        else:
-            if not os.path.exists(path) or not os.path.isfile(path):
-                raise ValueError("[-src] File doesn't exist.")
 
+        for file in os.listdir(src):
             transforme = Transformation(
-                source=path,
+                source=os.path.join(src, file),
                 transformation=transformation
             )
-            transforme.set_destination(dst)
+            transforme.set_destination(os.path.join(dst))
             transforme.transformations()
-    except Exception as error:
-        print(f"Error: {error}")
+    else:
+        if not os.path.exists(path) or not os.path.isfile(path):
+            raise ValueError("[-src] File doesn't exist.")
+
+        transforme = Transformation(
+            source=path,
+            transformation=transformation
+        )
+        transforme.set_destination(dst)
+        transforme.transformations()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as error:
+        print(f"Error: {error}")
