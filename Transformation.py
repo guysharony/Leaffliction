@@ -7,7 +7,7 @@ from plantcv import plantcv as pcv
 
 
 class Transformation:
-    def __init__(self, source: str, transformation: str) -> None:
+    def __init__(self, source: str, transformation: str, debug: str = "plot"):
         """
         Initializes a Transformation object.
 
@@ -22,7 +22,7 @@ class Transformation:
         self.image_name = os.path.splitext(self.filename)[0]
 
         # Debug
-        self.debug = "plot"
+        self.debug = debug
         self.transformation = transformation
 
     def _grayscale_hsv(self, channel: str, threshold: int):
@@ -98,7 +98,7 @@ class Transformation:
                 image,
                 os.path.join(self.outdir, image_filename),
             )
-        else:
+        elif self.debug == "plot":
             pcv.plot_image(image)
 
     def original(self):
@@ -267,7 +267,7 @@ class Transformation:
         """
         img = self.image
         plant_mask = self._plant_mask
-        debug = self.debug in ("plot", "print")
+        debug = self.debug and self.debug in ("plot", "print")
         transforme = self.transformation in ("all", "pseudolandmarks")
 
         if debug and transforme:
@@ -279,7 +279,7 @@ class Transformation:
         )
         pcv.homology.x_axis_pseudolandmarks(img=img, mask=plant_mask)
 
-        if self.debug in ("print"):
+        if self.debug and self.debug in ("print"):
             image, _, _ = pcv.readimage(output_image)
             self.plot_image(image, "pseudolandmarks")
             os.remove(output_image)
@@ -340,7 +340,7 @@ class Transformation:
         plt.ylabel("Proportion of pixels (%)")
         plt.grid(linestyle="--")
 
-        debug = self.debug in ("plot", "print")
+        debug = self.debug and self.debug in ("plot", "print")
         transforme = self.transformation in ("all", "colors")
         image_filename = "{self.image_name}_colors.jpg"
         if transforme and debug:
