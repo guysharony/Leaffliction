@@ -25,8 +25,20 @@ def main():
     # Dataset
     training_data, validation_data = load_dataset(sys.argv[1])
 
+    # Check categories
+    class_names = training_data.class_names
+    if len(class_names) < 2:
+        raise ValueError("At least 2 class names are required.")
+
+    dataset_category = class_names[0].split("_")[0].lower()
+    for category in class_names[1:]:
+        if category.split("_")[0].lower() != dataset_category:
+            raise ValueError(
+                "Class names must all belong to the same category."
+            )
+
     # Model
-    model = build_model(training_data, True)
+    model = build_model(class_names, True)
 
     history = model.fit(
         training_data,
@@ -38,7 +50,7 @@ def main():
     plotting_evolution(history)
 
     # Saving model
-    save_model(model)
+    save_model(model, dataset_category)
 
 
 if __name__ == "__main__":
