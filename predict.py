@@ -19,9 +19,21 @@ def main():
     main_directory = os.path.dirname(sub_directory)
 
     # load the saved model
-    model = models.load_model("model.keras")
-
     class_labels = get_class_labels(main_directory)
+    class_names = list(class_labels.keys())
+
+    if len(class_names) < 2:
+        raise ValueError("At least 2 class labels are required.")
+
+    dataset_category = class_names[0].split("_")[0].lower()
+    for category in class_names[1:]:
+        if category.split("_")[0].lower() != dataset_category:
+            raise ValueError(
+                "Class labels must all belong to the same category."
+            )
+
+    model = models.load_model(f"model_{dataset_category}.keras")
+
     predicted_class = predict_image(image_path, model)
 
     for label, value in class_labels.items():
@@ -34,7 +46,7 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as error:
-        print(f"error: {error}")
+    #try:
+    main()
+    #except Exception as error:
+    #    print(f"error: {error}")
