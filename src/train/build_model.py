@@ -6,13 +6,13 @@ from keras import regularizers
 from keras.optimizers import Adam
 
 
-def build_model(training_data, summary=False):
+def build_model(class_names, summary=False):
     """
     Builds and compiles a convolutional neural network model for image
     classification.
 
     Args:
-        training_data: A dataset containing training images and labels.
+        class_names: Class names of dataset.
         summary (bool, optional): Whether to print the model summary.
             Defaults to False.
 
@@ -20,7 +20,7 @@ def build_model(training_data, summary=False):
         keras.models.Sequential: A compiled convolutional neural network model.
 
     """
-    number_classes = len(training_data.class_names)
+    number_classes = len(class_names)
 
     # Initialize model
     model = models.Sequential()
