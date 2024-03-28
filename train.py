@@ -1,4 +1,5 @@
 import sys
+from keras import callbacks
 
 from src.train.save_model import save_model
 from src.train.build_model import build_model
@@ -40,10 +41,15 @@ def main():
     # Model
     model = build_model(class_names, True)
 
+    # Defining early stopping
+    early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+
+    # Training model
     history = model.fit(
         training_data,
         validation_data=validation_data,
         epochs=15,
+        callbacks=[early_stopping]
     )
 
     # Plotting evolution
