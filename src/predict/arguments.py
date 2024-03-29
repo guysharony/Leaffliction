@@ -32,6 +32,17 @@ def filter_arguments(args):
     ):
         raise ValueError("[image] Image to predict must be a valid jpg file.")
 
+    # Batch size
+    batch_size = args.batch_size[0] if args.batch_size else None
+    if image and batch_size is not None:
+        raise ValueError("[--batch_size] Batch size can only be used with --batch.")
+
+    if batch_size < 100:
+        raise ValueError("[--batch_size] Must be at least 100.")
+
+    if batch and batch_size is None:
+        batch_size = 100
+
     # Verify model
     model = args.model[0] if args.model else None
     if model is None:
@@ -51,6 +62,7 @@ def filter_arguments(args):
     return {
         'image': image,
         'batch': batch,
+        'batch_size': batch_size,
         'model': model,
         'labels': labels
     }
@@ -86,6 +98,13 @@ def arguments():
         default=None,
         help="Path to the class labals. If not specified, the program \
             will determine the class labels from model filename."
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        nargs=1,
+        default=None,
+        help="Number of images in batch test."
     )
 
     args = parser.parse_args(sys.argv[1::])
