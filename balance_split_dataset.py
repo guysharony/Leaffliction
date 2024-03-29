@@ -1,6 +1,9 @@
 import os
+import sys
 import shutil
 from sklearn.model_selection import train_test_split
+
+from Augmentation import balance_dataset
 
 
 def count_files(classes, subclasses, dataset_dir):
@@ -59,7 +62,7 @@ def split_dataset(dataset_dir):
 
     print(
         f"before split: {count_files(classes, subclasses_list, dataset_dir)}"
-        )
+    )
 
     i = 0
     for cls in classes:
@@ -107,8 +110,31 @@ def split_dataset(dataset_dir):
 
     print(
         f"Training set: {count_files(classes, subclasses_list, train_dir)}"
-        )
+    )
 
     print(
         f"Test set: {count_files(classes, subclasses_list, test_dir)}"
+    )
+
+
+def main():
+    if len(sys.argv) != 2:
+        raise ValueError(
+            "usage: python balance_split_dataset.py [dataset directory]"
         )
+
+    # Dataset directory
+    path = sys.argv[1]
+
+    # Balance dataset
+    balanced_source = balance_dataset(path)
+
+    # Split dataset
+    split_dataset(balanced_source)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as error:
+        print(f"error: {error}")

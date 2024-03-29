@@ -50,7 +50,7 @@ def main():
     plotting_evolution(history)
 
     # Saving model
-    save_learnings(model, dataset_category, )
+    save_learnings(model, dataset_category, class_names)
 
 
 if __name__ == "__main__":
