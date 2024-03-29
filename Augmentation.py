@@ -236,21 +236,24 @@ def balance_dataset(dataset_path):
     Args:
         dataset_path (str): path to the dataset to augment
     """
+    # Copying dataset to augmented directory
     augmented_directory = "./datasets/augmented_directory"
     if not os.path.exists(augmented_directory):
         src = "./datasets/"
         dest = "./datasets/augmented_directory"
+        print(f"=> Copying {src} to {dest}.")
         shutil.copytree(src, dest)
-        print(f"Copied {src} to {dest}")
 
+    # Counting images for each label
     category_counts = {}
-
+    print("=> Counting images of each label.")
     for root, dirs, files in os.walk(dataset_path):
         if len(dirs) == 0:
             count_jpg_files(category_counts, root)
 
+    # Balancing dataset
     target_count = max(category_counts.values())
-
+    print("=> Balancing images.")
     for category, count in category_counts.items():
         if count != target_count:
             augment_category(category, count, target_count)
