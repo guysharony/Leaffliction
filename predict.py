@@ -37,8 +37,6 @@ def prediction_on_batch(args):
         if os.path.isdir(label_path):
             label_directories.append(label_path)
 
-    print(label_directories)
-
     # Number of image per label
     images_per_label = int(batch_size / len(label_directories))
 
@@ -59,6 +57,7 @@ def prediction_on_batch(args):
         random_image_paths.extend(random_images)
 
     valid = 0
+    total = len(random_image_paths)
 
     for random_image in random_image_paths:
         label = random_image.split('/')[-2]
@@ -69,10 +68,11 @@ def prediction_on_batch(args):
         if predicted_class_label == label:
             valid += 1
 
-    accuracy = (valid / batch_size) * 100
+    accuracy = (valid / total) * 100
 
-    print(f'Predicted {valid} of {batch_size} images.')
-    print(f'Accuracy of {"{:.2f}".format(accuracy)}%')
+    print("\nResults:")
+    print(f'=> Predicted {valid} of {total} images.')
+    print(f'=> Accuracy of {"{:.2f}".format(accuracy)}%.')
 
 
 def main():
