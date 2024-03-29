@@ -35,7 +35,9 @@ def filter_arguments(args):
     # Batch size
     batch_size = args.batch_size[0] if args.batch_size else None
     if image and batch_size is not None:
-        raise ValueError("[--batch_size] Batch size can only be used with --batch.")
+        raise ValueError(
+            "[--batch_size] Batch size can only be used with --batch."
+        )
 
     if batch_size < 100:
         raise ValueError("[--batch_size] Must be at least 100.")

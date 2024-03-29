@@ -31,20 +31,31 @@ def prediction_on_batch(args):
     model = models.load_model(model)
 
     # List batch subdirectories
-    label_directories = [os.path.join(batch, labeldir) for labeldir in os.listdir(batch) if os.path.isdir(os.path.join(batch, labeldir))]
+    label_directories = []
+    for labeldir in os.listdir(batch):
+        label_path = os.path.join(batch, labeldir)
+        if os.path.isdir(label_path):
+            label_directories.append(label_path)
+
+    print(label_directories)
 
     # Number of image per label
     images_per_label = int(batch_size / len(label_directories))
 
     # Message
-    print(f"=> Evaluate on {batch_size} ({images_per_label} per label) images.")
+    print(f"Evaluate on {batch_size} ({images_per_label} per label) images.")
 
     # Store random images
     random_image_paths = []
 
     for labeldir in label_directories:
-        image_files = [os.path.join(labeldir, file) for file in os.listdir(labeldir) if file.lower().endswith(('.jpg'))]
-        random_images = random.sample(image_files, min(images_per_label, len(image_files)))
+        image_files = []
+        for file in os.listdir(labeldir):
+            if file.lower().endswith(('.jpg')):
+                image_files.append(os.path.join(labeldir, file))
+
+        sample_size = min(images_per_label, len(image_files))
+        random_images = random.sample(image_files, sample_size)
         random_image_paths.extend(random_images)
 
     valid = 0
@@ -62,6 +73,7 @@ def prediction_on_batch(args):
 
     print(f'Predicted {valid} of {batch_size} images.')
     print(f'Accuracy of {"{:.2f}".format(accuracy)}%')
+
 
 def main():
     args = arguments()
