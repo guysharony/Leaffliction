@@ -1,48 +1,87 @@
 import os
-import sys
-
+import random
 from keras import models
-from Augmentation import is_jpeg
+from src.predict.arguments import arguments
 from src.predict.predict_image import predict_image
-from src.predict.get_class_labels import get_class_labels
 from src.predict.display_prediction import display_prediction
 
 
-def main():
-    assert len(sys.argv) == 2, "Only one argument required."
-    assert os.path.isfile(sys.argv[1]) and is_jpeg(
-        sys.argv[1]
-    ), "Argument is not a valid .jpg file"
+def prediction_on_image(args):
+    image = args['image']
+    model = args['model']
+    labels = args['labels']
 
-    image_path = sys.argv[1]
-    sub_directory = os.path.dirname(image_path)
-    main_directory = os.path.dirname(sub_directory)
+    # Load model
+    model = models.load_model(model)
 
-    # load the saved model
-    class_labels = get_class_labels(main_directory)
-    class_names = list(class_labels.keys())
-
-    if len(class_names) < 2:
-        raise ValueError("At least 2 class labels are required.")
-
-    dataset_category = class_names[0].split("_")[0].lower()
-    for category in class_names[1:]:
-        if category.split("_")[0].lower() != dataset_category:
-            raise ValueError(
-                "Class labels must all belong to the same category."
-            )
-
-    model = models.load_model(f"model_{dataset_category}.keras")
-
-    predicted_class = predict_image(image_path, model)
-
-    for label, value in class_labels.items():
-        if value == predicted_class:
-            predicted_class_label = label
-            break
+    predicted_class = predict_image(image, model)
+    predicted_class_label = labels[predicted_class]
 
     print("Predicted class:", predicted_class_label)
-    display_prediction(image_path, predicted_class_label)
+    display_prediction(image, predicted_class_label)
+
+
+def prediction_on_batch(args):
+    batch = args['batch']
+    batch_size = args['batch_size']
+    model = args['model']
+    labels = args['labels']
+
+    # Load model
+    model = models.load_model(model)
+
+    # List batch subdirectories
+    label_directories = []
+    for labeldir in os.listdir(batch):
+        label_path = os.path.join(batch, labeldir)
+        if os.path.isdir(label_path):
+            label_directories.append(label_path)
+
+    # Number of image per label
+    images_per_label = int(batch_size / len(label_directories))
+
+    # Message
+    print(f"Evaluate on {batch_size} ({images_per_label} per label) images.")
+
+    # Store random images
+    random_image_paths = []
+
+    for labeldir in label_directories:
+        image_files = []
+        for file in os.listdir(labeldir):
+            if file.lower().endswith(('.jpg')):
+                image_files.append(os.path.join(labeldir, file))
+
+        sample_size = min(images_per_label, len(image_files))
+        random_images = random.sample(image_files, sample_size)
+        random_image_paths.extend(random_images)
+
+    valid = 0
+    total = len(random_image_paths)
+
+    for random_image in random_image_paths:
+        label = random_image.split('/')[-2]
+
+        predicted_class = predict_image(random_image, model)
+        predicted_class_label = labels[predicted_class]
+
+        if predicted_class_label == label:
+            valid += 1
+
+    accuracy = (valid / total) * 100
+
+    print("\nResults:")
+    print(f'=> Predicted {valid} of {total} images.')
+    print(f'=> Accuracy of {"{:.2f}".format(accuracy)}%.')
+
+
+def main():
+    args = arguments()
+
+    if args['image']:
+        prediction_on_image(args)
+    elif args['batch']:
+        prediction_on_batch(args)
 
 
 if __name__ == "__main__":

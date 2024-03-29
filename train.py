@@ -1,6 +1,5 @@
 import sys
-
-from src.train.save_model import save_model
+from src.train.save_learnings import save_learnings
 from src.train.build_model import build_model
 from src.train.load_dataset import load_dataset
 from src.train.plotting import plotting_evolution
@@ -27,6 +26,7 @@ def main():
 
     # Check categories
     class_names = training_data.class_names
+
     if len(class_names) < 2:
         raise ValueError("At least 2 class names are required.")
 
@@ -50,7 +50,7 @@ def main():
     plotting_evolution(history)
 
     # Saving model
-    save_model(model, dataset_category)
+    save_learnings(model, dataset_category, )
 
 
 if __name__ == "__main__":
