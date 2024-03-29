@@ -1,4 +1,5 @@
 from Augmentation import balance_dataset
+from src.train.split_dataset import split_dataset
 
 from keras.utils import image_dataset_from_directory
 
@@ -16,6 +17,9 @@ def load_dataset(path):
     """
     # Balance dataset
     balanced_source = balance_dataset(path)
+
+    # Split dataset
+    split_dataset(balanced_source)
 
     # Preparing dataset
     dataset = image_dataset_from_directory(

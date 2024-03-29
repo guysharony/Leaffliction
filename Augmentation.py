@@ -255,7 +255,7 @@ def balance_dataset(dataset_path):
         if count != target_count:
             augment_category(category, count, target_count)
 
-    return dataset_path.replace("./datasets", augmented_directory)
+    return f"{augmented_directory}/images"
 
 
 def main():
