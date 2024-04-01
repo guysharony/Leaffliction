@@ -39,7 +39,7 @@ def filter_arguments(args):
             "[--batch_size] Batch size can only be used with --batch."
         )
 
-    if batch_size < 100:
+    if batch_size and batch_size < 100:
         raise ValueError("[--batch_size] Must be at least 100.")
 
     if batch and batch_size is None:
