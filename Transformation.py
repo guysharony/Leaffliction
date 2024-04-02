@@ -78,7 +78,7 @@ class Transformation:
         self.outdir = f"./{destination}"
         pcv.params.debug_outdir = f"./{destination}"
 
-    def plot_image(self, image, transformation):
+    def plot_image(self, image, transformation, direct=False):
         """
         Plots or prints the transformed image based on debug mode and
         transformation type.
@@ -89,17 +89,15 @@ class Transformation:
             transformation (str): The type of transformation applied
                 to the image.
         """
-        if self.transformation not in ("all", transformation):
-            return
-
-        if self.debug == "print":
-            image_filename = f"{self.image_name}_{transformation}.jpg"
-            pcv.print_image(
-                image,
-                os.path.join(self.outdir, image_filename),
-            )
-        elif self.debug == "plot":
-            pcv.plot_image(image)
+        if self.transformation in ("all", transformation):
+            if self.debug == "print":
+                image_filename = f"{self.image_name}_{transformation}.jpg"
+                pcv.print_image(
+                    image,
+                    os.path.join(self.outdir, image_filename),
+                )
+            elif self.debug == "plot":
+                pcv.plot_image(image)
 
     def original(self):
         """
@@ -142,7 +140,7 @@ class Transformation:
         Returns:
             numpy.ndarray: The masked image.
         """
-        b_gray = self._grayscale_lab(channel="b", threshold=130)
+        b_gray = self._grayscale_lab(channel="b", threshold=160)
 
         l_or = pcv.logical_or(bin_img1=self._m_blur, bin_img2=b_gray)
 
@@ -261,28 +259,36 @@ class Transformation:
         )
         self.plot_image(analyze, "analyze")
 
-    def pseudolandmarks(self):
+    def pseudolandmarks(self, direct=False):
         """
         Detects pseudolandmarks on the image if the debug mode allows.
         """
         img = self.image
         plant_mask = self._plant_mask
         debug = self.debug and self.debug in ("plot", "print")
-        transforme = self.transformation in ("all", "pseudolandmarks")
 
-        if debug and transforme:
+        if debug:
             pcv.params.debug = self.debug
 
         output_image = os.path.join(
             pcv.params.debug_outdir,
             (str(pcv.params.device) + "_x_axis_pseudolandmarks.png"),
         )
+        input_image = os.path.join(
+            pcv.params.debug_outdir,
+            "input_image.png",
+        )
         pcv.homology.x_axis_pseudolandmarks(img=img, mask=plant_mask)
 
         if self.debug and self.debug in ("print"):
             image, _, _ = pcv.readimage(output_image)
-            self.plot_image(image, "pseudolandmarks")
-            os.remove(output_image)
+            self.plot_image(image, "pseudolandmarks", direct)
+
+            if os.path.exists(input_image) and os.path.isfile(input_image):
+                os.remove(input_image)
+
+            if os.path.exists(output_image) and os.path.isfile(output_image):
+                os.remove(output_image)
 
         pcv.params.debug = None
 
@@ -342,7 +348,7 @@ class Transformation:
 
         debug = self.debug and self.debug in ("plot", "print")
         transforme = self.transformation in ("all", "colors")
-        image_filename = "{self.image_name}_colors.jpg"
+        image_filename = f"{self.image_name}_colors.jpg"
         if transforme and debug:
             if self.debug == "plot":
                 plt.show()
@@ -367,7 +373,7 @@ class Transformation:
 
         self.analyze()
 
-        self.pseudolandmarks()
+        self.pseudolandmarks(True)
 
         self.colors()
 
