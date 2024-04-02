@@ -142,7 +142,7 @@ class Transformation:
         Returns:
             numpy.ndarray: The masked image.
         """
-        b_gray = self._grayscale_lab(channel="b", threshold=160)
+        b_gray = self._grayscale_lab(channel="b", threshold=130)
 
         l_or = pcv.logical_or(bin_img1=self._m_blur, bin_img2=b_gray)
 
