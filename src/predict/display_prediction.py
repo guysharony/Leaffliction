@@ -1,4 +1,3 @@
-import numpy as np
 import matplotlib.pyplot as plt
 from Transformation import Transformation
 
@@ -31,6 +30,9 @@ def display_prediction(image_path, predicted_class_label):
     axs[1].imshow(transformed_img)
     axs[1].axis('off')
 
-    fig.suptitle(f'Class predicted: {predicted_class_label.lower()}', color='white')
+    fig.suptitle(
+        f'Class predicted: {predicted_class_label.lower()}',
+        color='white'
+    )
 
     plt.show()
